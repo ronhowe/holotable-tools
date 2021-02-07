@@ -134,7 +134,7 @@ ForEach-Object {
             "card `"$img`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\nPower: $power Armor: $armor Landspeed: $landspeed\nDeploy: $deploy Forfeit: $forfeit\nIcons: $icons\n\nLore: $lore\n\nText: $gametext`""
         }
         "Weapon" {
-            "card `"$img`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\nDeploy: $deploy Forfeit: $forfeit\n\nLore: $lore\n\nText: $gametext`""
+            "card `"$img`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\n\nLore: $lore\n\nText: $gametext`""
         }
         default {
             Write-Error "Type = $Type, Title = $Title, Error = Card type not supported."
