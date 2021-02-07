@@ -89,6 +89,7 @@ ForEach-Object {
     $side = $_.side
     $subType = $_.front.subType
     $title = $_.front.title.Replace("<>", "").Replace("•", "�")
+    $titleSort = $_.front.title.Replace("<>", "").Replace("•", "")
     $type = $_.front.type
     $uniqueness = $_.front.uniqueness
 
@@ -143,6 +144,7 @@ ForEach-Object {
     $cdf = [PSCustomObject]@{
         Type    = $type
         SubType = $subType
+        Title   = $titleSort
         Line    = $line
     }
     Write-Output $cdf
