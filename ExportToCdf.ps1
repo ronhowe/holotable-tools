@@ -58,7 +58,7 @@ if (Test-Path -Path $CdfPath) {
     Remove-Item -Path $CdfPath
 }
 
-$json = Get-Content $JsonPath | ConvertFrom-Json
+$json = Get-Content -Path $JsonPath | ConvertFrom-Json
 
 $json.cards |
 Where-Object {
