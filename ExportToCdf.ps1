@@ -13,26 +13,39 @@
     .PARAMETER CdfPath
     The path to the output CDF file.
 
+    .PARAMETER Id
+    The id to parse.  Valid values can be found in the input JSFON file "id" properties.
+
     .PARAMETER Set
     The set to parse.  Valid values can be found in the input JSFON file "set" properties.
 
     .EXAMPLE
-    PS> ./ExportToCdf.ps1 -JsonPath ./Dark.json -CdfPath ./Dark.cdf -Set "Virtual Set 13"
+    PS> ./ExportToCdf.ps1 -JsonPath "./Dark.json" -CdfPath "./Dark.cdf" -Set "Virtual Set 13" -Verbose
 
     .EXAMPLE
-    PS> ./ExportToCdf.ps1 -JsonPath ./Light.json -CdfPath ./Light.cdf -Set "Virtual Set 13"
+    PS> ./ExportToCdf.ps1 -JsonPath "./Light.json" -CdfPath "./Light.cdf" -Id 5300 -Verbose
 #>
-[CmdletBinding()]
+[CmdletBinding(DefaultParameterSetName = "ById")]
 param(
-    [Parameter(Mandatory)]
+    [Parameter(Mandatory = $true, ParameterSetName = "ById")]
+    [Parameter(Mandatory = $true, ParameterSetName = "BySet")]
+    [ValidateNotNullOrEmpty()]
     [string]
     $JsonPath,
 
-    [Parameter(Mandatory)]
+    [Parameter(Mandatory = $true, ParameterSetName = "ById")]
+    [Parameter(Mandatory = $true, ParameterSetName = "BySet")]
+    [ValidateNotNullOrEmpty()]
     [string]
     $CdfPath,
 
-    [Parameter(Mandatory)]
+    [Parameter(Mandatory = $true, ParameterSetName = "ById")]
+    [ValidateNotNull()]
+    [int]
+    $Id,
+
+    [Parameter(Mandatory = $true, ParameterSetName = "BySet")]
+    [ValidateNotNullOrEmpty()]
     [string]
     $Set
 )
@@ -48,7 +61,14 @@ if (Test-Path -Path $CdfPath) {
 $json = Get-Content $JsonPath | ConvertFrom-Json
 
 $json.cards |
-Where-Object { $_.set -eq $Set } |
+Where-Object {
+    if ($PSCmdlet.ParameterSetName -eq "BySet") {
+        $_.set -eq $Set 
+    }
+    if ($PSCmdlet.ParameterSetName -eq "ById") {
+        $_.id -eq $Id
+    }
+} |
 ForEach-Object {
     Write-Verbose "Parsing id = $($_.id), title = $($_.front.title)..."
 
