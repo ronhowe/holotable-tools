@@ -80,7 +80,7 @@ ForEach-Object {
     $gametext = $_.front.gametext.Replace("Dark:  ", "DARK ($($_.front.darkSideIcons)): ").Replace("Light:  ", "LIGHT ($($_.front.lightSideIcons)): ").Replace("’", "'")
     $hyperspeed = $_.front.hyperspeed
     $icons = "" ; foreach ($icon in $_.front.icons) { $icons = $icons + "$icon, " } ; $icons = $icons.Trim().Trim(",")
-    $img = $_.front.imageUrl.Replace("https://res.starwarsccg.org/cards/Images-HT", "").Replace("large/", "t_").Replace(".gif", "").Replace("?raw=true", "")
+    $img = $_.front.imageUrl.Replace("https://res.starwarsccg.org/cards/Images-HT", "").Replace("large/", "t_").Replace(".gif?raw=true", "")
     $landspeed = $_.front.landspeed
     $lore = $_.front.lore
     $power = $_.front.power
