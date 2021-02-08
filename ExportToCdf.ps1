@@ -150,5 +150,18 @@ ForEach-Object {
     Write-Output $cdf
 } |
 Sort-Object -Property "Type", "SubType", "Title" |
+ForEach-Object {
+    if ($group -ne $_.SubType) {
+        $section = [PSCustomObject]@{
+            Type    = $_.Type
+            SubType = $_.SubType
+            Title   = $_.Title
+            Line    = $("`n`[{0} - {1}`]`n" -f $_.Type, $_.SubType).Replace(" - ]", "]")
+        }
+        Write-Output $section
+        $group = $_.SubType
+    }
+    Write-Output $_
+} |
 Select-Object -ExpandProperty "Line" |
 Set-Content -Path $CdfPath
