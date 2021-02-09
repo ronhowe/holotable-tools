@@ -81,20 +81,22 @@ function ExportToCdf {
 
     $json.cards |
     Where-Object {
-        if ($PSCmdlet.ParameterSetName -eq "NoFilter") {
-            $true
-        }
-        elseif ($PSCmdlet.ParameterSetName -eq "IdFilter") {
-            $_.id -eq $IdFilter
-        }
-        elseif ($PSCmdlet.ParameterSetName -eq "SetFilter") {
-            $_.set -like $SetFilter
-        }
-        elseif ($PSCmdlet.ParameterSetName -eq "TitleFilter") {
-            $_.front.title -like $TitleFilter
-        }
-        elseif ($PSCmdlet.ParameterSetName -eq "TypeFilter") {
-            $_.front.type -like $TypeFilter
+        (-not $_.legacy) -and {
+            if ($PSCmdlet.ParameterSetName -eq "NoFilter") {
+                $true
+            }
+            elseif ($PSCmdlet.ParameterSetName -eq "IdFilter") {
+                $_.id -eq $IdFilter
+            }
+            elseif ($PSCmdlet.ParameterSetName -eq "SetFilter") {
+                $_.set -like $SetFilter
+            }
+            elseif ($PSCmdlet.ParameterSetName -eq "TitleFilter") {
+                $_.front.title -like $TitleFilter
+            }
+            elseif ($PSCmdlet.ParameterSetName -eq "TypeFilter") {
+                $_.front.type -like $TypeFilter
+            }
         }
     } |
     ForEach-Object {
@@ -134,7 +136,7 @@ function ExportToCdf {
         Write-Debug "`tProperty = $($_.front.gametext)"
         $gametext = ""
         if ($_.front.gametext) {
-            $gametext = $_.front.gametext.Replace("Dark:  ", "DARK ($($_.front.darkSideIcons)): ").Replace("Light:  ", "LIGHT ($($_.front.lightSideIcons)): ").Replace("’", "'")
+            $gametext = $_.front.gametext.Replace("Dark:  ", "DARK ($($_.front.darkSideIcons)): ").Replace("Light:  ", "LIGHT ($($_.front.lightSideIcons)): ").Replace("’", "'").Replace("•", "�")
         }
         Write-Debug "`tValue = $gametext"
 
@@ -146,11 +148,14 @@ function ExportToCdf {
         Write-Debug "Parsing icons..."
         Write-Debug "`tProperty = $($_.front.icons)"
         $icons = "" ; foreach ($icon in $_.front.icons) { $icons = $icons + "$icon, " } ; $icons = $icons.Trim().Trim(",")
+        if ($icons -ne "") {
+            $icons = "\nIcons: $icons"
+        }
         Write-Debug "`tValue = $icons"
 
         Write-Debug "Parsing image..."
         Write-Debug "`tProperty = $($_.front.imageUrl)"
-        $image = $_.front.imageUrl.Replace("https://res.starwarsccg.org/cards/Images-HT", "").Replace("large/", "t_").Replace(".gif?raw=true", "")
+        $image = $_.front.imageUrl.Replace("https://res.starwarsccg.org/cards/Images-HT", "").Replace("cards/", "").Replace("large/", "t_").Replace(".gif?raw=true", "")
         Write-Debug "`tValue = $image"
 
         Write-Debug "Parsing landspeed..."
@@ -211,10 +216,10 @@ function ExportToCdf {
         $line =
         switch ($type) {
             "Admiral's Order" {
-                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nText: $gametext`""
+                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set$icons\n\nText: $gametext`""
             }
             "Character" {
-                "card `"$image`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\nPower: $power Ability: $ability\nDeploy: $deploy Forfeit: $forfeit\nIcons: $icons\n\nLore: $lore\n\nText: $gametext`""
+                "card `"$image`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\nPower: $power Ability: $ability\nDeploy: $deploy Forfeit: $forfeit$icons\n\nLore: $lore\n\nText: $gametext`""
             }
             "Creature" {
                 switch ($id) {
@@ -225,7 +230,7 @@ function ExportToCdf {
                         $defenseValue = "{DEFENSE}: {VALUE}"   
                     }
                 }
-                "card `"$image`" `"$title ($rarity)\n$side $type- $subType [$rarity]\nSet: $set\nPower: $power $defenseValue\nDeploy: $deploy Forfeit: $forfeit\nIcons: $icons\n\nLore: $lore\n\nText: $gametext`""
+                "card `"$image`" `"$title ($rarity)\n$side $type- $subType [$rarity]\nSet: $set\nPower: $power $defenseValue\nDeploy: $deploy Forfeit: $forfeit$icons\n\nLore: $lore\n\nText: $gametext`""
             }
             "Defensive Shield" {
                 "card `"/$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nLore: $lore\n\nText: $gametext`""
@@ -269,20 +274,20 @@ function ExportToCdf {
                 if ($uniqueness -contains "*") {
                     $uniqueness = ""
                 }
-                "card `"$image`" `"$uniqueness$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\nIcons: $icons\n\nText:\n{TODO: EDIT GAME TEXT}$gametext`""
+                "card `"$image`" `"$uniqueness$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set$icons\n\nText:\n{TODO: EDIT GAME TEXT}$gametext`""
             }
             "Objective" {
                 Write-Warning "Type = $Type, Title = $Title, Warning = Add \n\n between FRONT and BACK text."
-                "card `"/TWOSIDED$image`" `"$title (0/7)\n$side $type [$rarity]\nSet: $set\nIcons: $icons\n{TODO: EDIT GAME TEXT}$gametext`""
+                "card `"/TWOSIDED$image`" `"$title (0/7)\n$side $type [$rarity]\nSet: $set$icons\n{TODO: EDIT GAME TEXT}$gametext`""
             }
             "Podracer" {
-                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\nIcons: $icons\n\nLore: $lore\n\nText: $gametext`""
+                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set$icons\n\nLore: $lore\n\nText: $gametext`""
             }
             "Starship" {
-                "card `"$image`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\nPower: $power Armor: $armor Hyperspeed: $hyperspeed\nDeploy: $deploy Forfeit: $forfeit\nIcons: $icons\n\nLore: $lore\n\nText: $gametext`""
+                "card `"$image`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\nPower: $power Armor: $armor Hyperspeed: $hyperspeed\nDeploy: $deploy Forfeit: $forfeit$icons\n\nLore: $lore\n\nText: $gametext`""
             }
             "Vehicle" {
-                "card `"$image`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\nPower: $power Armor: $armor Landspeed: $landspeed\nDeploy: $deploy Forfeit: $forfeit\nIcons: $icons\n\nLore: $lore\n\nText: $gametext`""
+                "card `"$image`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\nPower: $power Armor: $armor Landspeed: $landspeed\nDeploy: $deploy Forfeit: $forfeit$icons\n\nLore: $lore\n\nText: $gametext`""
             }
             "Weapon" {
                 "card `"$image`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\n\nLore: $lore\n\nText: $gametext`""
