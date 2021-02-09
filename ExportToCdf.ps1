@@ -63,7 +63,7 @@ $json = Get-Content -Path $JsonPath | ConvertFrom-Json
 $json.cards |
 Where-Object {
     if ($PSCmdlet.ParameterSetName -eq "BySet") {
-        $_.set -eq $Set 
+        $_.set -like $Set 
     }
     if ($PSCmdlet.ParameterSetName -eq "ById") {
         $_.id -eq $Id
@@ -77,10 +77,13 @@ ForEach-Object {
     $deploy = $_.front.deploy
     $destiny = $_.front.destiny
     $forfeit = $_.front.forfeit
-    $gametext = $_.front.gametext.Replace("Dark:  ", "DARK ($($_.front.darkSideIcons)): ").Replace("Light:  ", "LIGHT ($($_.front.lightSideIcons)): ").Replace("’", "'")
+    $gametext = ""
+    if ($_.front.gametext) {
+        $gametext = $_.front.gametext.Replace("Dark:  ", "DARK ($($_.front.darkSideIcons)): ").Replace("Light:  ", "LIGHT ($($_.front.lightSideIcons)): ").Replace("’", "'")
+    }
     $hyperspeed = $_.front.hyperspeed
     $icons = "" ; foreach ($icon in $_.front.icons) { $icons = $icons + "$icon, " } ; $icons = $icons.Trim().Trim(",")
-    $img = $_.front.imageUrl.Replace("https://res.starwarsccg.org/cards/Images-HT", "").Replace("large/", "t_").Replace(".gif?raw=true", "")
+    $image = $_.front.imageUrl.Replace("https://res.starwarsccg.org/cards/Images-HT", "").Replace("large/", "t_").Replace(".gif?raw=true", "")
     $landspeed = $_.front.landspeed
     $lore = $_.front.lore
     $power = $_.front.power
@@ -96,46 +99,68 @@ ForEach-Object {
     $line =
     switch ($type) {
         "Admiral's Order" {
-            "card `"$img`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nText: $gametext`""
+            "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nText: $gametext`""
         }
         "Character" {
-            "card `"$img`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\nPower: $power Ability: $ability\nDeploy: $deploy Forfeit: $forfeit\nIcons: $icons\n\nLore: $lore\n\nText: $gametext`""
+            "card `"$image`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\nPower: $power Ability: $ability\nDeploy: $deploy Forfeit: $forfeit\nIcons: $icons\n\nLore: $lore\n\nText: $gametext`""
         }
         "Creature" {
             Write-Warning "Type = $Type, Title = $Title, Warning = Add creature defense value."
-            "card `"$img`" `"$title ($rarity)\n$side $type- $subType [$rarity]\nSet: $set\nPower: $power {TODO: ADD DEFENSE VALUE}\nDeploy: $deploy Forfeit: $forfeit\nIcons: $icons\n\nLore: $lore\n\nText: $gametext`""
+            "card `"$image`" `"$title ($rarity)\n$side $type- $subType [$rarity]\nSet: $set\nPower: $power {TODO: ADD DEFENSE VALUE}\nDeploy: $deploy Forfeit: $forfeit\nIcons: $icons\n\nLore: $lore\n\nText: $gametext`""
         }
         "Defensive Shield" {
-            "card `"/$img`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nLore: $lore\n\nText: $gametext`""
+            "card `"/$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nLore: $lore\n\nText: $gametext`""
         }
         "Device" {
-            "card `"$img`" `"$title ($rarity)\n$side $type [$rarity]\nSet: $set\n\nLore: $lore\n\nText: $gametext`""
+            "card `"$image`" `"$title ($rarity)\n$side $type [$rarity]\nSet: $set\n\nLore: $lore\n\nText: $gametext`""
         }
         "Effect" {
-            "card `"$img`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nLore: $lore\n\nText: $gametext`""
+            "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nLore: $lore\n\nText: $gametext`""
         }
         "Epic Event" {
-            "card `"$img`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nText: $gametext`""
+            "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nText: $gametext`""
+        }
+        "Game Aid" {
+            Write-Warning "Type = $Type, Title = $Title, Warning = Game Aid text needs formatting."
+            "card `"$image`" `"$title ($destiny)\n$side $type [$rariry]\nSet: $set\nText: $text`""
         }
         "Interrupt" {
-            "card `"$img`" `"$title ($destiny)\n$side $type - $subtype [$rarity]\nSet: $set\n\nLore: $lore\n\nText: $gametext`""
+            "card `"$image`" `"$title ($destiny)\n$side $type - $subtype [$rarity]\nSet: $set\n\nLore: $lore\n\nText: $gametext`""
+        }
+        "Jedi Test #1" {
+            "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nText: $gametext`""
+        }
+        "Jedi Test #2" {
+            "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nText: $gametext`""
+        }
+        "Jedi Test #3" {
+            "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nText: $gametext`""
+        }
+        "Jedi Test #4" {
+            "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nText: $gametext`""
+        }
+        "Jedi Test #5" {
+            "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nText: $gametext`""
+        }
+        "Jedi Test #6" {
+            "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nText: $gametext`""
         }
         "Location" {
             Write-Warning "Type = $Type, Title = $Title, Warning = Add \n\n between LIGHT and DARK text."
-            "card `"$img`" `"$uniqueness$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\nIcons: $icons\n\nText:\n{TODO: EDIT GAME TEXT}$gametext`""
+            "card `"$image`" `"$uniqueness$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\nIcons: $icons\n\nText:\n{TODO: EDIT GAME TEXT}$gametext`""
         }
         "Objective" {
             Write-Warning "Type = $Type, Title = $Title, Warning = Add \n\n between FRONT and BACK text."
-            "card `"/TWOSIDED$img`" `"$title (0/7)\n$side $type [$rarity]\nSet: $set\nIcons: $icons\n{TODO: EDIT GAME TEXT}$gametext`""
+            "card `"/TWOSIDED$image`" `"$title (0/7)\n$side $type [$rarity]\nSet: $set\nIcons: $icons\n{TODO: EDIT GAME TEXT}$gametext`""
         }
         "Starship" {
-            "card `"$img`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\nPower: $power Armor: $armor Hyperspeed: $hyperspeed\nDeploy: $deploy Forfeit: $forfeit\nIcons: $icons\n\nLore: $lore\n\nText: $gametext`""
+            "card `"$image`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\nPower: $power Armor: $armor Hyperspeed: $hyperspeed\nDeploy: $deploy Forfeit: $forfeit\nIcons: $icons\n\nLore: $lore\n\nText: $gametext`""
         }
         "Vehicle" {
-            "card `"$img`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\nPower: $power Armor: $armor Landspeed: $landspeed\nDeploy: $deploy Forfeit: $forfeit\nIcons: $icons\n\nLore: $lore\n\nText: $gametext`""
+            "card `"$image`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\nPower: $power Armor: $armor Landspeed: $landspeed\nDeploy: $deploy Forfeit: $forfeit\nIcons: $icons\n\nLore: $lore\n\nText: $gametext`""
         }
         "Weapon" {
-            "card `"$img`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\n\nLore: $lore\n\nText: $gametext`""
+            "card `"$image`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\n\nLore: $lore\n\nText: $gametext`""
         }
         default {
             Write-Error "Type = $Type, Title = $Title, Error = Card type not supported."
