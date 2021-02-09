@@ -98,7 +98,12 @@ function ExportToCdf {
         }
     } |
     ForEach-Object {
-        Write-Host "Parsing id = $($_.id), title = $($_.front.title)..." -ForegroundColor Cyan
+        Write-Verbose "Parsing id = $($_.id), title = $($_.front.title)..."
+
+        Write-Debug "Parsing id..."
+        Write-Debug "`tProperty = $($_.id)"
+        $id = $_.id
+        Write-Debug "`tValue = $id"
 
         Write-Debug "Parsing ability..."
         Write-Debug "`tProperty = $($_.front.ability)"
@@ -212,8 +217,15 @@ function ExportToCdf {
                 "card `"$image`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\nPower: $power Ability: $ability\nDeploy: $deploy Forfeit: $forfeit\nIcons: $icons\n\nLore: $lore\n\nText: $gametext`""
             }
             "Creature" {
-                Write-Warning "Type = $Type, Title = $Title, Warning = Add creature defense value."
-                "card `"$image`" `"$title ($rarity)\n$side $type- $subType [$rarity]\nSet: $set\nPower: $power {TODO: ADD DEFENSE VALUE}\nDeploy: $deploy Forfeit: $forfeit\nIcons: $icons\n\nLore: $lore\n\nText: $gametext`""
+                switch ($id) {
+                    2821 <# Womp Rat #> {
+                        $defenseValue = "SCURRY: 4"
+                    }
+                    default {
+                        $defenseValue = "{DEFENSE}: {VALUE}"   
+                    }
+                }
+                "card `"$image`" `"$title ($rarity)\n$side $type- $subType [$rarity]\nSet: $set\nPower: $power $defenseValue\nDeploy: $deploy Forfeit: $forfeit\nIcons: $icons\n\nLore: $lore\n\nText: $gametext`""
             }
             "Defensive Shield" {
                 "card `"/$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nLore: $lore\n\nText: $gametext`""
@@ -310,9 +322,18 @@ Clear-Host
 Set-Location -Path $(Split-Path -Path $MyInvocation.MyCommand.Path -Parent)
 
 Measure-Command {
-    # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "./Light.cdf" # -Debug -Verbose
-    # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "./Light.cdf" -IdFilter 30 # -Debug -Verbose
-    # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "./Light.cdf" -SetFilter "*13*" # -Debug -Verbose
-    # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "./Light.cdf" -TitleFilter "*Rebel Leadership*" # -Debug -Verbose
-    ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "./Light.cdf" -TypeFilter "Location*" # -Debug -Verbose
+    ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Dark.json" -CdfPath "~/source/repos/swccg-card-json/Dark.cdf" # -Debug -Verbose
+    # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "~/source/repos/swccg-card-json/Light.cdf" # -Debug -Verbose
+
+    # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Dark.json" -CdfPath "~/source/repos/swccg-card-json/Dark.cdf" -IdFilter 3 # -Debug -Verbose
+    # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "~/source/repos/swccg-card-json/Light.cdf" -IdFilter 5300 # -Debug -Verbose
+
+    # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Dark.json" -CdfPath "~/source/repos/swccg-card-json/Dark.cdf" -SetFilter "*13*" # -Debug -Verbose
+    # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "~/source/repos/swccg-card-json/Light.cdf" -SetFilter "*13*" # -Debug -Verbose
+
+    # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Dark.json" -CdfPath "~/source/repos/swccg-card-json/Dark.cdf" -TitleFilter "*Rebel Leadership*" # -Debug -Verbose
+    # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "~/source/repos/swccg-card-json/Light.cdf" -TitleFilter "*Rebel Leadership*" # -Debug -Verbose
+
+    # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Dark.json" -CdfPath "~/source/repos/swccg-card-json/Dark.cdf" -TypeFilter "Creature" # -Debug -Verbose
+    # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "~/source/repos/swccg-card-json/Light.cdf" -TypeFilter "Creature" # -Debug -Verbose
 }
