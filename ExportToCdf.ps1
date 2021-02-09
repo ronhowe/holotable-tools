@@ -127,6 +127,14 @@ function ExportToCdf {
         $destiny = $_.front.destiny
         Write-Debug "`tValue = $destiny"
 
+        Write-Debug "Parsing extraText..."
+        Write-Debug "`tProperty = $($_.front.extraText)"
+        $extraText = $_.front.extraText
+        if ($extraText) {
+            $extraText = " $extraText"
+        }
+        Write-Debug "`tValue = $extraText"
+
         Write-Debug "Parsing forfeit..."
         Write-Debug "`tProperty = $($_.front.forfeit)"
         $forfeit = $_.front.forfeit
@@ -219,7 +227,7 @@ function ExportToCdf {
                 "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set$icons\n\nText: $gametext`""
             }
             "Character" {
-                "card `"$image`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\nPower: $power Ability: $ability\nDeploy: $deploy Forfeit: $forfeit$icons\n\nLore: $lore\n\nText: $gametext`""
+                "card `"$image`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\nPower: $power Ability: $ability$extraText\nDeploy: $deploy Forfeit: $forfeit$icons\n\nLore: $lore\n\nText: $gametext`""
             }
             "Creature" {
                 switch ($id) {
