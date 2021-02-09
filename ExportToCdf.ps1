@@ -31,6 +31,7 @@ function ExportToCdf {
         [Parameter(Mandatory = $true, ParameterSetName = "IdFilter")]
         [Parameter(Mandatory = $true, ParameterSetName = "SetFilter")]
         [Parameter(Mandatory = $true, ParameterSetName = "TypeFilter")]
+        [Parameter(Mandatory = $true, ParameterSetName = "TitleFilter")]
         [ValidateNotNullOrEmpty()]
         [string]
         $JsonPath,
@@ -38,6 +39,7 @@ function ExportToCdf {
         [Parameter(Mandatory = $true, ParameterSetName = "IdFilter")]
         [Parameter(Mandatory = $true, ParameterSetName = "SetFilter")]
         [Parameter(Mandatory = $true, ParameterSetName = "TypeFilter")]
+        [Parameter(Mandatory = $true, ParameterSetName = "TitleFilter")]
         [ValidateNotNullOrEmpty()]
         [string]
         $CdfPath,
@@ -55,7 +57,12 @@ function ExportToCdf {
         [Parameter(Mandatory = $true, ParameterSetName = "TypeFilter")]
         [ValidateNotNullOrEmpty()]
         [string]
-        $TypeFilter
+        $TypeFilter,
+
+        [Parameter(Mandatory = $true, ParameterSetName = "TitleFilter")]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $TitleFilter
     )
 
     if (-not (Test-Path -Path $JsonPath)) {
@@ -77,6 +84,9 @@ function ExportToCdf {
         }
         elseif ($PSCmdlet.ParameterSetName -eq "SetFilter") {
             $_.set -like $SetFilter
+        }
+        elseif ($PSCmdlet.ParameterSetName -eq "TitleFilter") {
+            $_.front.title -like $TitleFilter
         }
         elseif ($PSCmdlet.ParameterSetName -eq "TypeFilter") {
             $_.front.type -like $TypeFilter
@@ -292,8 +302,9 @@ Clear-Host
 Set-Location -Path $(Split-Path -Path $MyInvocation.MyCommand.Path -Parent)
 
 Measure-Command {
-    ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "./Light.cdf" -SetFilter "*" # -Debug -Verbose
+    # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "./Light.cdf" -SetFilter "*" # -Debug -Verbose
     # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "./Light.cdf" -IdFilter "30" # -Debug -Verbose
     # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "./Light.cdf" -SetFilter "*13*" # -Debug -Verbose
+    ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "./Light.cdf" -TitleFilter "*Rebel Leadership*" # -Debug -Verbose
     # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "./Light.cdf" -TypeFilter "Jedi*" # -Debug -Verbose
 }
