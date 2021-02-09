@@ -66,6 +66,8 @@ function ExportToCdf {
         Remove-Item -Path $CdfPath
     }
 
+    $subTypeGroup = ""
+
     $json = Get-Content -Path $JsonPath | ConvertFrom-Json
 
     $json.cards |
@@ -290,8 +292,8 @@ Clear-Host
 Set-Location -Path $(Split-Path -Path $MyInvocation.MyCommand.Path -Parent)
 
 Measure-Command {
-    # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "./Light.cdf" -SetFilter "*" # -Debug -Verbose
+    ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "./Light.cdf" -SetFilter "*" # -Debug -Verbose
     # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "./Light.cdf" -IdFilter "30" # -Debug -Verbose
-    ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "./Light.cdf" -SetFilter "*13*" # -Debug -Verbose
+    # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "./Light.cdf" -SetFilter "*13*" # -Debug -Verbose
     # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "./Light.cdf" -TypeFilter "Jedi*" # -Debug -Verbose
 }
