@@ -75,28 +75,35 @@ function ExportToCdf {
         Remove-Item -Path $CdfPath
     }
 
+    $version = "version {0}" -f $(Get-Date -Format "yyyyMMdd")
+
+
+    Add-Content -Path $CdfPath -Value $version
+
+    $back = "back foo.gif"
+
+    Add-Content -Path $CdfPath -Value $back
+
     $subTypeGroup = ""
 
     $json = Get-Content -Path $JsonPath | ConvertFrom-Json
 
     $json.cards |
     Where-Object {
-        (-not $_.legacy) -and {
-            if ($PSCmdlet.ParameterSetName -eq "NoFilter") {
-                $true
-            }
-            elseif ($PSCmdlet.ParameterSetName -eq "IdFilter") {
-                $_.id -eq $IdFilter
-            }
-            elseif ($PSCmdlet.ParameterSetName -eq "SetFilter") {
-                $_.set -like $SetFilter
-            }
-            elseif ($PSCmdlet.ParameterSetName -eq "TitleFilter") {
-                $_.front.title -like $TitleFilter
-            }
-            elseif ($PSCmdlet.ParameterSetName -eq "TypeFilter") {
-                $_.front.type -like $TypeFilter
-            }
+        if ($PSCmdlet.ParameterSetName -eq "NoFilter") {
+            $true
+        }
+        elseif ($PSCmdlet.ParameterSetName -eq "IdFilter") {
+            $_.id -eq $IdFilter
+        }
+        elseif ($PSCmdlet.ParameterSetName -eq "SetFilter") {
+            $_.set -like $SetFilter
+        }
+        elseif ($PSCmdlet.ParameterSetName -eq "TitleFilter") {
+            $_.front.title -like $TitleFilter
+        }
+        elseif ($PSCmdlet.ParameterSetName -eq "TypeFilter") {
+            $_.front.type -like $TypeFilter
         }
     } |
     ForEach-Object {
@@ -327,7 +334,7 @@ function ExportToCdf {
         Write-Output $_
     } |
     Select-Object -ExpandProperty "Line" |
-    Set-Content -Path $CdfPath
+    Add-Content -Path $CdfPath
 }
 
 Clear-Host
@@ -335,18 +342,18 @@ Clear-Host
 Set-Location -Path $(Split-Path -Path $MyInvocation.MyCommand.Path -Parent)
 
 Measure-Command {
-    ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Dark.json" -CdfPath "~/source/repos/swccg-card-json/Dark.cdf" # -Debug -Verbose
+    # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Dark.json" -CdfPath "~/source/repos/swccg-card-json/Dark.cdf" # -Debug -Verbose
     # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "~/source/repos/swccg-card-json/Light.cdf" # -Debug -Verbose
 
     # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Dark.json" -CdfPath "~/source/repos/swccg-card-json/Dark.cdf" -IdFilter 3 # -Debug -Verbose
     # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "~/source/repos/swccg-card-json/Light.cdf" -IdFilter 5300 # -Debug -Verbose
 
-    # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Dark.json" -CdfPath "~/source/repos/swccg-card-json/Dark.cdf" -SetFilter "*13*" # -Debug -Verbose
+    # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Dark.json" -CdfPath "~/source/repos/swccg-card-json/Dark.cdf" -SetFilter "*13*" -Verbose
     # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "~/source/repos/swccg-card-json/Light.cdf" -SetFilter "*13*" # -Debug -Verbose
 
     # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Dark.json" -CdfPath "~/source/repos/swccg-card-json/Dark.cdf" -TitleFilter "*Rebel Leadership*" # -Debug -Verbose
     # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "~/source/repos/swccg-card-json/Light.cdf" -TitleFilter "*Rebel Leadership*" # -Debug -Verbose
 
-    # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Dark.json" -CdfPath "~/source/repos/swccg-card-json/Dark.cdf" -TypeFilter "Creature" # -Debug -Verbose
+    ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Dark.json" -CdfPath "~/source/repos/swccg-card-json/Dark.cdf" -TypeFilter "Admiral*" # -Debug -Verbose
     # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "~/source/repos/swccg-card-json/Light.cdf" -TypeFilter "Creature" # -Debug -Verbose
 }
