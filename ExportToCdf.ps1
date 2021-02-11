@@ -1,4 +1,4 @@
-Import-Module .\HolotableTools.psm1 -Force
+$ErrorActionPreference = "Stop"
 function ExportToCdf {
     <#
     .SYNOPSIS
@@ -76,177 +76,53 @@ function ExportToCdf {
         Remove-Item -Path $CdfPath
     }
 
-    $version = "version {0}" -f $(Get-Date -Format "yyyyMMdd")
+    # $version = "version {0}" -f $(Get-Date -Format "yyyyMMdd")
+    # Add-Content -Path $CdfPath -Value $version
+    # $back = "back foo.gif"
+    # Add-Content -Path $CdfPath -Value $back
 
-    Add-Content -Path $CdfPath -Value $version
-
-    $back = "back foo.gif"
-
-    Add-Content -Path $CdfPath -Value $back
-
-    $subTypeGroup = ""
+    [string]$PreviousSection = ""
+    $PreviousSection | Out-Null
 
     $json = Get-Content -Path $JsonPath | ConvertFrom-Json
 
-    $json.cards |
-    Where-Object {
-        if ($PSCmdlet.ParameterSetName -eq "NoFilter") {
-            $true
-        }
-        elseif ($PSCmdlet.ParameterSetName -eq "IdFilter") {
-            $_.id -eq $IdFilter
-        }
-        elseif ($PSCmdlet.ParameterSetName -eq "SetFilter") {
-            $_.set -like $SetFilter
-        }
-        elseif ($PSCmdlet.ParameterSetName -eq "TitleFilter") {
-            $_.front.title -like $TitleFilter
-        }
-        elseif ($PSCmdlet.ParameterSetName -eq "TypeFilter") {
-            $_.front.type -like $TypeFilter
-        }
-    } |
+    $json |
+    Select-Object -ExpandProperty "cards" |
+    # Where-Object {
+    # $_.id -eq 634
+    # if ($PSCmdlet.ParameterSetName -eq "NoFilter") {
+    #     $true
+    # }
+    # elseif ($PSCmdlet.ParameterSetName -eq "IdFilter") {
+    #     $_.id -eq $IdFilter
+    # }
+    # elseif ($PSCmdlet.ParameterSetName -eq "SetFilter") {
+    #     $_.set -like $SetFilter
+    # }
+    # elseif ($PSCmdlet.ParameterSetName -eq "TitleFilter") {
+    #     $_.front.title -like $TitleFilter
+    # }
+    # elseif ($PSCmdlet.ParameterSetName -eq "TypeFilter") {
+    #     $_.front.type -like $TypeFilter
+    # }
+    # } |
+    Select-Object -Property @{Name = "Section"; Expression = { ConvertTo-CdfSection -Context $_ } }, @{Name = "SortTitle"; Expression = { ConvertTo-CdfTitleSort -Context $_ } }, @{Name = "Line"; Expression = { ConvertTo-CdfLine -Context $_ } } |
+    Sort-Object -Property "Section", "SortTitle", "Line" |
     ForEach-Object {
-        Write-Verbose "Parsing id = $($_.id), title = $($_.front.title)..."
-
-        $id = $_.id
-        $ability = $_.front.ability
-        $armor = $_.front.armor
-        $deploy = $_.front.deploy
-        $destiny = $_.front.destiny
-        $extraText = $_.front.extraText
-        if ($extraText) {
-            $extraText = " $extraText"
+        if ($PreviousSection -ne $_.Section) {
+            Write-Output $("`n`{0}`n" -f $_.Section)
         }
-        $forfeit = $_.front.forfeit
-        $gametext = ConvertTo-CdfGameText -GameText $_.front.gametext -DarkSideIcons $_.front.darkSideIcons -LightSideIcons $_.front.lightSideIcons
-        $hyperspeed = $_.front.hyperspeed
-        $icon = ConvertTo-CdfIcon -Icons $_.front.icons
-        $iconTag = ConvertTo-CdfIconTag -Icons $icons
-
-        $image = ConvertTo-CdfImage -ImageUrl $_.front.imageUrl
-        $landspeed = $_.front.landspeed
-        $lore = $_.front.lore
-        $power = $_.front.power
-        $rarity = $_.rarity
-        $set = $_.set
-        $side = $_.side
-        $subType = $_.front.subType
-        $title = ConvertTo-CdfTitle -Title $_.front.title
-        $sortTitle = ConvertTo-CdfTitleSort -Title $_.front.title
-        $type = $_.front.type
-        $uniqueness = $_.front.uniqueness
-        $section = ConvertTo-CdfSection -Type $type -SubType $subType
-
-        $line =
-        switch ($type) {
-            "Admiral's Order" {
-                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set$icons\n\nText: $gametext`""
-            }
-            "Character" {
-                "card `"$image`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\nPower: $power Ability: $ability$extraText\nDeploy: $deploy Forfeit: $forfeit$icons\n\nLore: $lore\n\nText: $gametext`""
-            }
-            "Creature" {
-                switch ($id) {
-                    2821 <# Womp Rat #> {
-                        $defenseValue = "SCURRY: 4"
-                    }
-                    default {
-                        $defenseValue = "{DEFENSE}: {VALUE}"   
-                    }
-                }
-                "card `"$image`" `"$title ($rarity)\n$side $type- $subType [$rarity]\nSet: $set\nPower: $power $defenseValue\nDeploy: $deploy Forfeit: $forfeit$icons\n\nLore: $lore\n\nText: $gametext`""
-            }
-            "Defensive Shield" {
-                "card `"/$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nLore: $lore\n\nText: $gametext`""
-            }
-            "Device" {
-                "card `"$image`" `"$title ($rarity)\n$side $type [$rarity]\nSet: $set\n\nLore: $lore\n\nText: $gametext`""
-            }
-            "Effect" {
-                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nLore: $lore\n\nText: $gametext`""
-            }
-            "Epic Event" {
-                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nText: $gametext`""
-            }
-            "Game Aid" {
-                "card `"$image`" `"$title ($destiny)\n$side $type [$rariry]\nSet: $set\nText: $text`""
-            }
-            "Interrupt" {
-                "card `"$image`" `"$title ($destiny)\n$side $type - $subtype [$rarity]\nSet: $set\n\nLore: $lore\n\nText: $gametext`""
-            }
-            "Jedi Test #1" {
-                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nText: $gametext`""
-            }
-            "Jedi Test #2" {
-                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nText: $gametext`""
-            }
-            "Jedi Test #3" {
-                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nText: $gametext`""
-            }
-            "Jedi Test #4" {
-                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nText: $gametext`""
-            }
-            "Jedi Test #5" {
-                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nText: $gametext`""
-            }
-            "Jedi Test #6" {
-                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nText: $gametext`""
-            }
-            "Location" {
-                if ($uniqueness -contains "*") {
-                    $uniqueness = ""
-                }
-                "card `"$image`" `"$uniqueness$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set$icons\n\nText:\n{TODO: EDIT GAME TEXT}$gametext`""
-            }
-            "Objective" {
-                "card `"/TWOSIDED$image`" `"$title (0/7)\n$side $type [$rarity]\nSet: $set$icons\n{TODO: EDIT GAME TEXT}$gametext`""
-            }
-            "Podracer" {
-                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set$icons\n\nLore: $lore\n\nText: $gametext`""
-            }
-            "Starship" {
-                "card `"$image`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\nPower: $power Armor: $armor Hyperspeed: $hyperspeed\nDeploy: $deploy Forfeit: $forfeit$icons\n\nLore: $lore\n\nText: $gametext`""
-            }
-            "Vehicle" {
-                "card `"$image`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\nPower: $power Armor: $armor Landspeed: $landspeed\nDeploy: $deploy Forfeit: $forfeit$icons\n\nLore: $lore\n\nText: $gametext`""
-            }
-            "Weapon" {
-                "card `"$image`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\n\nLore: $lore\n\nText: $gametext`""
-            }
-            default {
-                Write-Warning "Type = $Type, Title = $Title, Error = Card type not supported."
-            }
-        }
-        $cdf = [PSCustomObject]@{
-            Section = $section
-            Type    = $type
-            Title   = $sortTitle
-            Line    = $line
-        }
-        Write-Output $cdf
+        $PreviousSection = $_.Section
+        Write-Output $_.Line
     } |
-    Sort-Object -Property "Type", "SubType", "Title" |
-    ForEach-Object {
-        if ($subTypeGroup -ne $_.SubType) {
-            $section = [PSCustomObject]@{
-                Type    = $_.Type
-                SubType = $_.SubType
-                Title   = $_.Title
-                Line    = $("`n`{0}`n" -f $section2)
-            }
-            Write-Output $section
-            $subTypeGroup = $_.SubType
-        }
-        Write-Output $_
-    } |
-    Select-Object -ExpandProperty "Line" |
     Add-Content -Path $CdfPath
 }
 
 Clear-Host
 
 Set-Location -Path $(Split-Path -Path $MyInvocation.MyCommand.Path -Parent)
+
+Import-Module -Name "./HolotableTools.psm1" -Force
 
 # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Dark.json" -CdfPath "~/source/repos/swccg-card-json/Dark.cdf"
 # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "~/source/repos/swccg-card-json/Light.cdf" # -Debug -Verbose
