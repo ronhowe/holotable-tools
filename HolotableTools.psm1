@@ -1,100 +1,108 @@
-function ConvertTo-CdfTitle {
-    param (
-        [Parameter()]
-        [string]
-        $Title
+function ConvertTo-CdfGameText {
+    param(
+        [Parameter(ValueFromPipeline = $true)]
+        [PSCustomObject]
+        $Context
     )
 
-    $output = $Title.Replace("<>", "").Replace("•", "�")
+    [string]$output = "";
+
+    $output = $Context.front.gametext.Replace("Dark:  ", "DARK ($DarkSideIcons): ").Replace("Light:  ", "LIGHT ($LightSideIcons): ").Replace("•", "�")
 
     Write-Output $output
 }
 
-function ConvertTo-CdfTitleSort {
-    param (
-        [Parameter()]
-        [string]
-        $Title
+function ConvertTo-CdfIcons {
+    param(
+        [Parameter(ValueFromPipeline = $true)]
+        [PSCustomObject]
+        $Context
     )
 
-    $output = $Title.Replace("<>", "").Replace("•", "")
+    [string]$output = "";
 
-    Write-Output $output
-}
-
-function ConvertTo-CdfSection {
-    param (
-        [Parameter()]
-        [string]
-        $Type,
-
-        [Parameter()]
-        [string]
-        $SubType
-    )
-
-    $output = $("[{0} - {1}]" -f $Type, $SubType.Split(":")[0]).Replace(" - ]", "]")
+    foreach ($icon in $Context.front.icons) { $output = $output + "$icon, " } ; $output = $output.Trim().Trim(",")
 
     Write-Output $output
 }
 
 function ConvertTo-CdfImage {
-    [CmdletBinding()]
-    param (
-        [Parameter()]
-        [string]
-        $ImageUrl
-    )
-
-    $output = $ImageUrl.Replace("https://res.starwarsccg.org/cards/Images-HT", "").Replace("cards/", "").Replace("large/", "t_").Replace(".gif?raw=true", "")
-
-    Write-Output $output
-}
-
-function ConvertTo-CdfGameText {
     param(
-        [string]
-        $GameText,
-
-        [int]
-        $DarkSideIcons,
-
-        [int]
-        $LightSideIcons
+        [Parameter(ValueFromPipeline = $true)]
+        [PSCustomObject]
+        $Context
     )
 
-    $output = ""
+    [string]$output = "";
 
-    $output = $GameText.Replace("Dark:  ", "DARK ($DarkSideIcons): ").Replace("Light:  ", "LIGHT ($LightSideIcons): ").Replace("’", "'").Replace("•", "�")
+    $output = $Context.front.imageUrl.Replace("https://res.starwarsccg.org/cards/Images-HT", "").Replace("cards/", "").Replace("large/", "t_").Replace(".gif?raw=true", "")
 
     Write-Output $output
 }
-function ConvertTo-CdfIconTag {
+
+function ConvertTo-CdfSection {
     param(
-        [string]
-        $Icons
+        [Parameter(ValueFromPipeline = $true)]
+        [PSCustomObject]
+        $Context
     )
 
-    $output = ""
+    [string]$output = "";
 
-    if ($Icons -ne "") {
-        $output = "Icons: $Icons"
-    }
+    $output = $("[{0} - {1}]" -f $Context.front.type, $Context.front.subType.Split(":")[0]).Replace(" - ]", "]")
 
     Write-Output $output
 }
 
-function ConvertTo-CdfIcon {
-    [CmdletBinding()]
+function ConvertTo-CdfTitle {
+    param(
+        [Parameter(ValueFromPipeline = $true)]
+        [PSCustomObject]
+        $Context
+    )
+
+    [string]$output = "";
+
+    $output = $Context.front.title.Replace("<>", "").Replace("•", "�")
+
+    Write-Output $output
+}
+
+
+function ConvertTo-CdfTitleSort {
     param (
-        [Parameter()]
-        [string[]]
-        $Icons
+        [Parameter(ValueFromPipeline = $true)]
+        [PSCustomObject]
+        $Context
     )
 
-    $output = ""
+    [string]$output = "";
 
-    foreach ($icon in $Icons) { $output = $output + "$icon, " } ; $output = $output.Trim().Trim(",")
+    $output = $Context.front.title.Replace("<>", "").Replace("•", "")
 
     Write-Output $output
 }
+
+# function Get-JsonById {
+#     param (
+#         [Parameter(Mandatory = $true)]
+#         [int]
+#         $Id,
+
+#         [ValidateSet("Dark", "Light")]
+#         [Parameter(Mandatory = $true)]
+#         [string]
+#         $Side,
+
+#         [ValidateScript( { Test-Path -Path $_ -PathType "Container" })]
+#         [string]
+#         $RepoPath = "~/source/repos/swccg-card-json"
+#     )
+
+#     $JsonPath = Join-Path -Path $RepoPath -ChildPath "$Side.json"
+
+#     Get-Content -Path $JsonPath |
+#     ConvertFrom-Json |
+#     Select-Object -ExpandProperty "cards" |
+#     Where-Object { $_.id -eq $Id }
+# }

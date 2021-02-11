@@ -2,99 +2,107 @@ Clear-Host
 
 Set-Location -Path $(Split-Path -Path $MyInvocation.MyCommand.Path -Parent)
 
-Import-Module -Name ".\HolotableTools.psm1" -Force
+Import-Module -Name "./HolotableTools.psm1" -Force
+
+BeforeAll {
+    $Dark = Get-Content -Path "~/source/repos/swccg-card-json/Dark.json" |
+    ConvertFrom-Json |
+    Select-Object -ExpandProperty "cards"
+
+    $Light = Get-Content -Path "~/source/repos/swccg-card-json/Light.json" |
+    ConvertFrom-Json |
+    Select-Object -ExpandProperty "cards"
+
+    # Suppress PSScriptAnalyzer(PSUseDeclaredVarsMoreThanAssignments)
+    @($Dark, $Light) | Out-Null
+}
 
 Describe "ConvertTo-CdfGameText" {
-    Context "When GameText Is Normal" {
-        It "Should Return GameText" {
-            ConvertTo-CdfGametext -GameText "test" |
-            Should -Be "test"
-        }
-        Context "When GameText Contains •" {
-            It "Should Replace • With �" {
-                ConvertTo-CdfGametext -GameText "•3,720 To 1" |
-                Should -Be "�3,720 To 1"
-            }
-        }
-        Context "When GameText Contains ’" {
-            It "Should Replace ’ With '" {
-                ConvertTo-CdfGametext -GameText "’3,720 To 1" |
-                Should -Be "'3,720 To 1"
-            }
-        }
-    }
-}
-Describe "ConvertTo-CdfIcon" {
-    Context "when normal" {
-        It "should format section" {
-            ConvertTo-CdfIcon -Icons @("Death Star II", "Endor") |
-            Should -Be "Death Star II, Endor"
-        }
-    }
-}
-Describe "ConvertTo-CdfIconTag" {
-    Context "when normal" {
-        It "should format section" {
-            ConvertTo-CdfIconTag -Icons "Death Star II" |
-            Should -Be "Icons: Death Star II"
-        }
-    }
-    Context "when empty" {
-        It "should return empty" {
-            ConvertTo-CdfIconTag -Icons "" |
-            Should -Be ""
+    Context "When GameText Contains •" {
+        It "Should Replace • With �" {
+            #Coruscant-Dark/large/beginlandingyourtroops
+            $Dark.Where( { $_.id -eq 216 }) |
+            ConvertTo-CdfGameText |
+            Should -Be "Deploy on table. Your unique (�) Republic characters are forfeit +2 and immune to Goo Nee Tay. Unless Imperial Arrest Order on table, once during your deploy phase, may deploy one docking bay from Reserve Deck; reshuffle. (Immune to Alter.)"
         }
     }
 }
 
 Describe "ConvertTo-CdfImage" {
-    Context "when normal" {
-        It "should format section" {
-            ConvertTo-CdfImage -ImageUrl "https://res.starwarsccg.org/cards/Images-HT/starwars/Dagobah-Dark/large/asteroidfield.gif?raw=true" |
-            Should -Be "/starwars/Dagobah-Dark/t_asteroidfield"
+    Context "When ImageUrl Is Normal" {
+        It "Should Parse ImageUrl" {
+            #Coruscant-Dark/large/beginlandingyourtroops
+            $Dark.Where( { $_.id -eq 216 }) |
+            ConvertTo-CdfImage |
+            Should -Be "/starwars/Coruscant-Dark/t_beginlandingyourtroops"
+        }
+    }
+}
+
+Describe "ConvertTo-CdfIcons" {
+    Context "When Multiple Icons Exist" {
+        It "Should Concatenate Icons" {
+            # Premiere-Dark/large/darthvader
+            $Dark.Where( { $_.id -eq 634 }) |
+            ConvertTo-CdfIcons |
+            Should -Be "Pilot, Warrior"
         }
     }
 }
 
 Describe "ConvertTo-CdfSection" {
-    Context "when normal" {
-        It "should format section" {
-            ConvertTo-CdfSection -Type "Location" -SubType "System" |
+    Context "When SubType Is Simple" {
+        It "Should Parse" {
+            # Premiere-Dark/large/alderaan
+            $Dark.Where( { $_.id -eq 79 }) |
+            ConvertTo-CdfSection |
             Should -Be "[Location - System]"
         }
     }
-    Context "when subtype is complex" {
-        It "should format section" {
-            ConvertTo-CdfSection -Type "Starship" -SubType "Starfighter: Trilon Aggressor" |
+    Context "When SubType Is Complex" {
+        It "Should Parse" {
+            # Dagobah-Dark/large/ig2000
+            $Dark.Where( { $_.id -eq 1244 }) |
+            ConvertTo-CdfSection |
             Should -Be "[Starship - Starfighter]"
         }
     }
 }
 
 Describe "ConvertTo-CdfTitle" {
-    Context "when title contains <>" {
-        It "should remove <>" {
-            ConvertTo-CdfTitle -Title "<><><>Asteroid Field" |
+    Context "When Title Contains <>" {
+        It "Should Remove <>" {
+            # Dagobah-Dark/large/asteroidfield
+            $Dark.Where( { $_.id -eq 148 }) |
+            ConvertTo-CdfTitle |
             Should -Be "Asteroid Field"
         }
-        Context "when title contains •" {
-            It "Should replace • with �" {
-                ConvertTo-CdfTitle -Title "•3,720 To 1" |
-                Should -Be "�3,720 To 1"
-            }
+    }
+    Context "When Title Contains•" {
+        It "Should Replace • With �" {
+            # Dagobah-Dark/large/3720to1
+            $Dark.Where( { $_.id -eq 4 }) |
+            ConvertTo-CdfTitle |
+            Should -Be "�3,720 To 1"
         }
     }
 }
 
 Describe "ConvertTo-CdfTitleSort" {
-    Context "when title contains <>" {
-        It "should remove <>" {
-            ConvertTo-CdfTitleSort -Title "<><><>Asteroid Field" | Should -Be "Asteroid Field"
+    Context "When Title Contains <>" {
+        It "Should Remove <>" {
+            # Dagobah-Dark/large/asteroidfield
+            $Dark.Where( { $_.id -eq 148 }) |
+            ConvertTo-CdfTitleSort |
+            Should -Be "Asteroid Field"
         }
-        Context "when title contains •" {
-            It "should remove •" {
-                ConvertTo-CdfTitleSort -Title "•3,720 To 1" | Should -Be "3,720 To 1"
-            }
+    }
+    Context "When Title Contains •" {
+        It "Should Remove •" {
+            # Dagobah-Dark/large/3720to1
+            $Dark.Where( { $_.id -eq 4 }) |
+            ConvertTo-CdfTitleSort |
+            Should -Be "3,720 To 1"
         }
     }
 }
