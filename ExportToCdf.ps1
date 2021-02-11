@@ -1,3 +1,4 @@
+Import-Module .\HolotableTools.psm1 -Force
 function ExportToCdf {
     <#
     .SYNOPSIS
@@ -77,7 +78,6 @@ function ExportToCdf {
 
     $version = "version {0}" -f $(Get-Date -Format "yyyyMMdd")
 
-
     Add-Content -Path $CdfPath -Value $version
 
     $back = "back foo.gif"
@@ -109,124 +109,34 @@ function ExportToCdf {
     ForEach-Object {
         Write-Verbose "Parsing id = $($_.id), title = $($_.front.title)..."
 
-        Write-Debug "Parsing id..."
-        Write-Debug "`tProperty = $($_.id)"
         $id = $_.id
-        Write-Debug "`tValue = $id"
-
-        Write-Debug "Parsing ability..."
-        Write-Debug "`tProperty = $($_.front.ability)"
         $ability = $_.front.ability
-        Write-Debug "`tValue = $ability"
-
-        Write-Debug "Parsing armor..."
-        Write-Debug "`tProperty = $($_.front.armor)"
         $armor = $_.front.armor
-        Write-Debug "`tValue = $armor"
-
-        Write-Debug "Parsing deploy..."
-        Write-Debug "`tProperty = $($_.front.deploy)"
         $deploy = $_.front.deploy
-        Write-Debug "`tValue = $deploy"
-
-        Write-Debug "Parsing destiny..."
-        Write-Debug "`tProperty = $($_.front.destiny)"
         $destiny = $_.front.destiny
-        Write-Debug "`tValue = $destiny"
-
-        Write-Debug "Parsing extraText..."
-        Write-Debug "`tProperty = $($_.front.extraText)"
         $extraText = $_.front.extraText
         if ($extraText) {
             $extraText = " $extraText"
         }
-        Write-Debug "`tValue = $extraText"
-
-        Write-Debug "Parsing forfeit..."
-        Write-Debug "`tProperty = $($_.front.forfeit)"
         $forfeit = $_.front.forfeit
-        Write-Debug "`tValue = $forfeit"
-
-        Write-Debug "Parsing gametext..."
-        Write-Debug "`tProperty = $($_.front.gametext)"
-        $gametext = ""
-        if ($_.front.gametext) {
-            $gametext = $_.front.gametext.Replace("Dark:  ", "DARK ($($_.front.darkSideIcons)): ").Replace("Light:  ", "LIGHT ($($_.front.lightSideIcons)): ").Replace("’", "'").Replace("•", "�")
-        }
-        Write-Debug "`tValue = $gametext"
-
-        Write-Debug "Parsing hyperspeed..."
-        Write-Debug "`tProperty = $($_.front.hyperspeed)"
+        $gametext = ConvertTo-CdfGameText -GameText $_.front.gametext -DarkSideIcons $_.front.darkSideIcons -LightSideIcons $_.front.lightSideIcons
         $hyperspeed = $_.front.hyperspeed
-        Write-Debug "`tValue = $hyperspeed"
+        $icon = ConvertTo-CdfIcon -Icons $_.front.icons
+        $iconTag = ConvertTo-CdfIconTag -Icons $icons
 
-        Write-Debug "Parsing icons..."
-        Write-Debug "`tProperty = $($_.front.icons)"
-        $icons = "" ; foreach ($icon in $_.front.icons) { $icons = $icons + "$icon, " } ; $icons = $icons.Trim().Trim(",")
-        if ($icons -ne "") {
-            $icons = "\nIcons: $icons"
-        }
-        Write-Debug "`tValue = $icons"
-
-        Write-Debug "Parsing image..."
-        Write-Debug "`tProperty = $($_.front.imageUrl)"
-        $image = $_.front.imageUrl.Replace("https://res.starwarsccg.org/cards/Images-HT", "").Replace("cards/", "").Replace("large/", "t_").Replace(".gif?raw=true", "")
-        Write-Debug "`tValue = $image"
-
-        Write-Debug "Parsing landspeed..."
-        Write-Debug "`tProperty = $($_.front.landspeed)"
+        $image = ConvertTo-CdfImage -ImageUrl $_.front.imageUrl
         $landspeed = $_.front.landspeed
-        Write-Debug "`tValue = $landspeed"
-
-        Write-Debug "Parsing lore..."
-        Write-Debug "`tProperty = $($_.front.lore)"
         $lore = $_.front.lore
-        Write-Debug "`tValue = $lore"
-
-        Write-Debug "Parsing power..."
-        Write-Debug "`tProperty = $($_.front.power)"
         $power = $_.front.power
-        Write-Debug "`tValue = $power"
-
-        Write-Debug "Parsing rarity..."
-        Write-Debug "`tProperty = $($_.rarity)"
         $rarity = $_.rarity
-        Write-Debug "`tValue = $rarity"
-
-        Write-Debug "Parsing set..."
-        Write-Debug "`tProperty = $($_.set)"
         $set = $_.set
-        Write-Debug "`tValue = $set"
-
-        Write-Debug "Parsing side..."
-        Write-Debug "`tProperty = $($_.side)"
         $side = $_.side
-        Write-Debug "`tValue = $side"
-
-        Write-Debug "Parsing subType..."
-        Write-Debug "`tProperty = $($_.front.subType)"
         $subType = $_.front.subType
-        Write-Debug "`tValue = $subType"
-
-        Write-Debug "Parsing title..."
-        Write-Debug "`tProperty = $($_.front.title)"
-        $title = $_.front.title.Replace("<>", "").Replace("•", "�")
-        Write-Debug "`tValue = $title"
-
-        Write-Debug "Parsing titleSort..."
-        Write-Debug "`tProperty = $($_.front.title)"
-        $titleSort = $_.front.title.Replace("<>", "").Replace("•", "")
-        Write-Debug "`tValue = $titleSort"
-
-        Write-Debug "Parsing type..."
-        Write-Debug "`tProperty = $($_.front.type)"
+        $title = ConvertTo-CdfTitle -Title $_.front.title
+        $sortTitle = ConvertTo-CdfTitleSort -Title $_.front.title
         $type = $_.front.type
-        Write-Debug "`tValue = $type"
-
-        Write-Debug "Parsing uniqueness..."
-        Write-Debug "`tProperty = $($_.front.uniqueness)"
         $uniqueness = $_.front.uniqueness
-        Write-Debug "`tValue = $uniqueness"
+        $section = ConvertTo-CdfSection -Type $type -SubType $subType
 
         $line =
         switch ($type) {
@@ -260,7 +170,6 @@ function ExportToCdf {
                 "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nText: $gametext`""
             }
             "Game Aid" {
-                Write-Warning "Type = $Type, Title = $Title, Warning = Game Aid text needs formatting."
                 "card `"$image`" `"$title ($destiny)\n$side $type [$rariry]\nSet: $set\nText: $text`""
             }
             "Interrupt" {
@@ -285,14 +194,12 @@ function ExportToCdf {
                 "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nText: $gametext`""
             }
             "Location" {
-                Write-Warning "Type = $Type, Title = $Title, Warning = Add \n\n between LIGHT and DARK text."
                 if ($uniqueness -contains "*") {
                     $uniqueness = ""
                 }
                 "card `"$image`" `"$uniqueness$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set$icons\n\nText:\n{TODO: EDIT GAME TEXT}$gametext`""
             }
             "Objective" {
-                Write-Warning "Type = $Type, Title = $Title, Warning = Add \n\n between FRONT and BACK text."
                 "card `"/TWOSIDED$image`" `"$title (0/7)\n$side $type [$rarity]\nSet: $set$icons\n{TODO: EDIT GAME TEXT}$gametext`""
             }
             "Podracer" {
@@ -312,9 +219,9 @@ function ExportToCdf {
             }
         }
         $cdf = [PSCustomObject]@{
+            Section = $section
             Type    = $type
-            SubType = $subType
-            Title   = $titleSort
+            Title   = $sortTitle
             Line    = $line
         }
         Write-Output $cdf
@@ -326,7 +233,7 @@ function ExportToCdf {
                 Type    = $_.Type
                 SubType = $_.SubType
                 Title   = $_.Title
-                Line    = $("`n`[{0} - {1}`]`n" -f $_.Type, $_.SubType).Replace(" - ]", "]")
+                Line    = $("`n`{0}`n" -f $section2)
             }
             Write-Output $section
             $subTypeGroup = $_.SubType
@@ -341,19 +248,17 @@ Clear-Host
 
 Set-Location -Path $(Split-Path -Path $MyInvocation.MyCommand.Path -Parent)
 
-Measure-Command {
-    # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Dark.json" -CdfPath "~/source/repos/swccg-card-json/Dark.cdf" # -Debug -Verbose
-    # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "~/source/repos/swccg-card-json/Light.cdf" # -Debug -Verbose
+# ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Dark.json" -CdfPath "~/source/repos/swccg-card-json/Dark.cdf"
+# ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "~/source/repos/swccg-card-json/Light.cdf" # -Debug -Verbose
 
-    # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Dark.json" -CdfPath "~/source/repos/swccg-card-json/Dark.cdf" -IdFilter 3 # -Debug -Verbose
-    # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "~/source/repos/swccg-card-json/Light.cdf" -IdFilter 5300 # -Debug -Verbose
+ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Dark.json" -CdfPath "~/source/repos/swccg-card-json/Dark.cdf" -IdFilter 3 -Debug -Verbose
+# ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "~/source/repos/swccg-card-json/Light.cdf" -IdFilter 5300 # -Debug -Verbose
 
-    # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Dark.json" -CdfPath "~/source/repos/swccg-card-json/Dark.cdf" -SetFilter "*13*" -Verbose
-    # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "~/source/repos/swccg-card-json/Light.cdf" -SetFilter "*13*" # -Debug -Verbose
+# ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Dark.json" -CdfPath "~/source/repos/swccg-card-json/Dark.cdf" -SetFilter "*Dagobah*"
+# ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "~/source/repos/swccg-card-json/Light.cdf" -SetFilter "*13*" # -Debug -Verbose
 
-    # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Dark.json" -CdfPath "~/source/repos/swccg-card-json/Dark.cdf" -TitleFilter "*Rebel Leadership*" # -Debug -Verbose
-    # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "~/source/repos/swccg-card-json/Light.cdf" -TitleFilter "*Rebel Leadership*" # -Debug -Verbose
+# ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Dark.json" -CdfPath "~/source/repos/swccg-card-json/Dark.cdf" -TitleFilter "*Rebel Leadership*" # -Debug -Verbose
+# ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "~/source/repos/swccg-card-json/Light.cdf" -TitleFilter "*Rebel Leadership*" # -Debug -Verbose
 
-    ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Dark.json" -CdfPath "~/source/repos/swccg-card-json/Dark.cdf" -TypeFilter "Admiral*" # -Debug -Verbose
-    # ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "~/source/repos/swccg-card-json/Light.cdf" -TypeFilter "Creature" # -Debug -Verbose
-}
+# ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Dark.json" -CdfPath "~/source/repos/swccg-card-json/Dark.cdf" -TypeFilter "Admiral*" # -Debug -Verbose
+# ExportToCdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "~/source/repos/swccg-card-json/Light.cdf" -TypeFilter "Creature" # -Debug -Verbose
