@@ -1,3 +1,125 @@
+function ConvertTo-Cdf {
+    <#
+    .SYNOPSIS
+    This script attempts to parse a JSON file in the swccg-card-json repo to the approximate format of a Holotable CDF file.
+
+    .DESCRIPTION
+    This script attempts to parse a JSON file in the swccg-card-json repo to the approximate format of a Holotable CDF file.
+
+    The resulting output is sorted by card type, subtype and title.
+
+    .PARAMETER JsonPath
+    The path to the input JSON file.
+
+    .PARAMETER CdfPath
+    The path to the output CDF file.
+
+    .PARAMETER Id
+    The id to parse.  Valid values can be found in the input JSFON file "id" properties.
+
+    .PARAMETER Set
+    The set to parse.  Valid values can be found in the input JSFON file "set" properties.
+
+    .EXAMPLE
+    PS> ./ConvertTo-Cdf.ps1 -JsonPath "./Dark.json" -CdfPath "./Dark.cdf" -Set "Virtual Set 13" -Verbose
+
+    .EXAMPLE
+    PS> ./ConvertTo-Cdf.ps1 -JsonPath "./Light.json" -CdfPath "./Light.cdf" -Id 5300 -Verbose
+#>
+    [CmdletBinding(DefaultParameterSetName = "NoFilter")]
+    param(
+        [Parameter(Mandatory = $true, ParameterSetName = "NoFilter")]
+        [Parameter(Mandatory = $true, ParameterSetName = "IdFilter")]
+        [Parameter(Mandatory = $true, ParameterSetName = "SetFilter")]
+        [Parameter(Mandatory = $true, ParameterSetName = "TitleFilter")]
+        [Parameter(Mandatory = $true, ParameterSetName = "TypeFilter")]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $JsonPath,
+
+        [Parameter(Mandatory = $true, ParameterSetName = "NoFilter")]
+        [Parameter(Mandatory = $true, ParameterSetName = "IdFilter")]
+        [Parameter(Mandatory = $true, ParameterSetName = "SetFilter")]
+        [Parameter(Mandatory = $true, ParameterSetName = "TitleFilter")]
+        [Parameter(Mandatory = $true, ParameterSetName = "TypeFilter")]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $CdfPath,
+
+        [Parameter(Mandatory = $true, ParameterSetName = "IdFilter")]
+        [ValidateNotNull()]
+        [int]
+        $IdFilter,
+
+        [Parameter(Mandatory = $true, ParameterSetName = "SetFilter")]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $SetFilter,
+
+        [Parameter(Mandatory = $true, ParameterSetName = "TitleFilter")]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $TitleFilter,
+
+        [Parameter(Mandatory = $true, ParameterSetName = "TypeFilter")]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $TypeFilter
+    )
+
+    if (-not (Test-Path -Path $JsonPath)) {
+        Write-Error "Cannot find $JsonPath." -ErrorAction Stop
+    }
+
+    if (Test-Path -Path $CdfPath) {
+        Remove-Item -Path $CdfPath
+    }
+
+    "version {0}" -f $(Get-Date -Format "yyyyMMdd") | Add-Content -Path $CdfPath
+
+    if ($CdfPath.EndsWith("Dark.cdf")) {
+        "back imp.gif" | Add-Content -Path $CdfPath
+    }
+    elseif ($CdfPath.EndsWith("Light.cdf")) {
+        "back reb.gif" | Add-Content -Path $CdfPath
+    }
+    else {
+        "back placeholder.gif" | Add-Content -Path $CdfPath
+    }
+    
+    [string]$PreviousSection = ""
+
+    Get-Content -Path $JsonPath |
+    ConvertFrom-Json |
+    Select-Object -ExpandProperty "cards" |
+    Where-Object {
+        if ($PSCmdlet.ParameterSetName -eq "NoFilter") {
+            $true
+        }
+        elseif ($PSCmdlet.ParameterSetName -eq "IdFilter") {
+            $_.id -eq $IdFilter
+        }
+        elseif ($PSCmdlet.ParameterSetName -eq "SetFilter") {
+            $_.set -like $SetFilter
+        }
+        elseif ($PSCmdlet.ParameterSetName -eq "TitleFilter") {
+            $_.front.title -like $TitleFilter
+        }
+        elseif ($PSCmdlet.ParameterSetName -eq "TypeFilter") {
+            $_.front.type -like $TypeFilter
+        }
+    } |
+    Select-Object -Property @{Name = "Section"; Expression = { ConvertTo-CdfSection -Context $_ } }, @{Name = "SortTitle"; Expression = { ConvertTo-CdfTitleSort -Context $_ } }, @{Name = "Line"; Expression = { ConvertTo-CdfLine -Context $_ } } |
+    Sort-Object -Property "Section", "SortTitle", "Line" |
+    ForEach-Object {
+        if ($PreviousSection -ne $_.Section) {
+            Write-Output $("`n`{0}`n" -f $_.Section)
+        }
+        $PreviousSection = $_.Section
+        Write-Output $_.Line
+    } |
+    Add-Content -Path $CdfPath
+}
 function ConvertTo-CdfGameText {
     param(
         [Parameter(ValueFromPipeline = $true)]
@@ -8,11 +130,14 @@ function ConvertTo-CdfGameText {
     [string]$output = "";
 
     try {
-        $output = $Context.front.gametext.Replace("Dark:  ", "DARK ($DarkSideIcons): ").Replace("Light:  ", "LIGHT ($LightSideIcons): ").Replace("•", "�")
+        if ($Context.front.gametext) {
+            $output = $Context.front.gametext.Replace("Dark:  ", "DARK ($DarkSideIcons): ").Replace("Light:  ", "LIGHT ($LightSideIcons): ").Replace("•", "�")
+        }
     }
     catch {
-        Write-Warning "Failed to parse gametext."
-        $output = "TODO"
+        Write-Error "FAILED TO PARSE GAMETEXT"
+        Write-Host $Context -ForegroundColor Red
+        $output = "FAILED TO PARSE GAMETEXT"
     }
 
     Write-Output $output
@@ -84,7 +209,6 @@ function ConvertTo-CdfLine {
         $uniqueness = $Context.front.uniqueness
         $section = ConvertTo-CdfSection -Context $Context
 
-
         $output =
         switch ($type) {
             "Admiral's Order" {
@@ -118,9 +242,6 @@ function ConvertTo-CdfLine {
             }
             "Game Aid" {
                 "card `"$image`" `"$title ($destiny)\n$side $type [$rariry]\nSet: $set\nText: $text`""
-            }
-            "Interupt" {
-                "card `"$image`" `"$title ($destiny)\n$side $type - $subtype [$rarity]\nSet: $set\n\nLore: $lore\n\nText: $gametext`""
             }
             "Interrupt" {
                 "card `"$image`" `"$title ($destiny)\n$side $type - $subtype [$rarity]\nSet: $set\n\nLore: $lore\n\nText: $gametext`""

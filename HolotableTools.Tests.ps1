@@ -20,10 +20,19 @@ BeforeAll {
 Describe "ConvertTo-CdfGameText" {
     Context "When GameText Contains •" {
         It "Should Replace • With �" {
-            #Coruscant-Dark/large/beginlandingyourtroops
+            # Coruscant-Dark/large/beginlandingyourtroops
             $Dark.Where( { $_.id -eq 216 }) |
             ConvertTo-CdfGameText |
             Should -Be "Deploy on table. Your unique (�) Republic characters are forfeit +2 and immune to Goo Nee Tay. Unless Imperial Arrest Order on table, once during your deploy phase, may deploy one docking bay from Reserve Deck; reshuffle. (Immune to Alter.)"
+        }
+    }
+
+    Context "When GameText Is Missing" {
+        It "Should Return Empty GameText" {
+            # JediPack-Dark/large
+            $Dark.Where( { $_.id -eq 2424 }) |
+            ConvertTo-CdfGameText |
+            Should -Be ""
         }
     }
 }
@@ -31,7 +40,7 @@ Describe "ConvertTo-CdfGameText" {
 Describe "ConvertTo-CdfImage" {
     Context "When ImageUrl Is Normal" {
         It "Should Parse ImageUrl" {
-            #Coruscant-Dark/large/beginlandingyourtroops
+            # Coruscant-Dark/large/beginlandingyourtroops
             $Dark.Where( { $_.id -eq 216 }) |
             ConvertTo-CdfImage |
             Should -Be "/starwars/Coruscant-Dark/t_beginlandingyourtroops"
