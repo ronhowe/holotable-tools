@@ -7,7 +7,13 @@ function ConvertTo-CdfGameText {
 
     [string]$output = "";
 
-    $output = $Context.front.gametext.Replace("Dark:  ", "DARK ($DarkSideIcons): ").Replace("Light:  ", "LIGHT ($LightSideIcons): ").Replace("•", "�")
+    try {
+        $output = $Context.front.gametext.Replace("Dark:  ", "DARK ($DarkSideIcons): ").Replace("Light:  ", "LIGHT ($LightSideIcons): ").Replace("•", "�")
+    }
+    catch {
+        Write-Warning "Failed to parse gametext."
+        $output = "TODO"
+    }
 
     Write-Output $output
 }
@@ -165,6 +171,7 @@ function ConvertTo-CdfLine {
     }
     catch {
         Write-Host "FAILED TO PARSE $id" -ForegroundColor Red
+        Write-Host $_.Exception.Message
         $output = "FAILED TO PARSE $id"
     }
 
