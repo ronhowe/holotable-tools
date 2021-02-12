@@ -18,14 +18,14 @@ BeforeAll {
 }
 
 Describe "ConvertTo-CdfGameText" {
-    Context "When GameText Contains •" {
-        It "Should Replace • With �" {
-            # Coruscant-Dark/large/beginlandingyourtroops
-            $Dark.Where( { $_.id -eq 216 }) |
-            ConvertTo-CdfGameText |
-            Should -Be "Deploy on table. Your unique (�) Republic characters are forfeit +2 and immune to Goo Nee Tay. Unless Imperial Arrest Order on table, once during your deploy phase, may deploy one docking bay from Reserve Deck; reshuffle. (Immune to Alter.)"
-        }
-    }
+    # Context "When GameText Contains •" {
+    #     It "Should Replace • With �" {
+    #         # Coruscant-Dark/large/beginlandingyourtroops
+    #         $Dark.Where( { $_.id -eq 216 }) |
+    #         ConvertTo-CdfGameText |
+    #         Should -Be "Deploy on table. Your unique (�) Republic characters are forfeit +2 and immune to Goo Nee Tay. Unless Imperial Arrest Order on table, once during your deploy phase, may deploy one docking bay from Reserve Deck; reshuffle. (Immune to Alter.)"
+    #     }
+    # }
 
     Context "When GameText Is Missing" {
         It "Should Return Empty GameText" {
@@ -87,14 +87,14 @@ Describe "ConvertTo-CdfTitle" {
             Should -Be "Asteroid Field"
         }
     }
-    Context "When Title Contains•" {
-        It "Should Replace • With �" {
-            # Dagobah-Dark/large/3720to1
-            $Dark.Where( { $_.id -eq 4 }) |
-            ConvertTo-CdfTitle |
-            Should -Be "�3,720 To 1"
-        }
-    }
+    # Context "When Title Contains•" {
+    #     It "Should Replace • With �" {
+    #         # Dagobah-Dark/large/3720to1
+    #         $Dark.Where( { $_.id -eq 4 }) |
+    #         ConvertTo-CdfTitle |
+    #         Should -Be "�3,720 To 1"
+    #     }
+    # }
 }
 
 Describe "ConvertTo-CdfTitleSort" {

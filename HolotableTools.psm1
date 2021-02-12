@@ -94,7 +94,7 @@ function ConvertTo-Cdf {
     Select-Object -ExpandProperty "cards" |
     Where-Object {
         if ($PSCmdlet.ParameterSetName -eq "NoFilter") {
-            $true
+            $_.legacy -eq $false
         }
         elseif ($PSCmdlet.ParameterSetName -eq "IdFilter") {
             $_.id -eq $IdFilter
@@ -109,11 +109,11 @@ function ConvertTo-Cdf {
             $_.front.type -like $TypeFilter
         }
     } |
-    Select-Object -Property @{Name = "Section"; Expression = { ConvertTo-CdfSection -Context $_ } }, @{Name = "SortTitle"; Expression = { ConvertTo-CdfTitleSort -Context $_ } }, @{Name = "Line"; Expression = { ConvertTo-CdfLine -Context $_ } } |
-    Sort-Object -Property "Section", "SortTitle", "Line" |
+    Select-Object -Property @{Name = "Image"; Expression = { ConvertTo-CdfImage -Context $_ } }, @{Name = "Section"; Expression = { ConvertTo-CdfSection -Context $_ } }, @{Name = "SortTitle"; Expression = { ConvertTo-CdfTitleSort -Context $_ } }, @{Name = "Line"; Expression = { ConvertTo-CdfLine -Context $_ } } |
+    Sort-Object -Property "Section", "SortTitle", "Image", "Line" |
     ForEach-Object {
         if ($PreviousSection -ne $_.Section) {
-            Write-Output $("`n`{0}`n" -f $_.Section)
+            Write-Output $("`r`n`{0}`r`n" -f $_.Section)
         }
         $PreviousSection = $_.Section
         Write-Output $_.Line
@@ -131,7 +131,7 @@ function ConvertTo-CdfGameText {
 
     try {
         if ($Context.front.gametext) {
-            $output = $Context.front.gametext.Replace("Dark:  ", "DARK ($DarkSideIcons): ").Replace("Light:  ", "LIGHT ($LightSideIcons): ").Replace("•", "�")
+            $output = $Context.front.gametext.Replace("Dark:  ", "DARK ($DarkSideIcons): ").Replace("Light:  ", "LIGHT ($LightSideIcons): ")
         }
     }
     catch {
@@ -153,6 +153,24 @@ function ConvertTo-CdfIcons {
     [string]$output = "";
 
     foreach ($icon in $Context.front.icons) { $output = $output + "$icon, " } ; $output = $output.Trim().Trim(",")
+
+    Write-Output $output
+}
+
+function ConvertTo-CdfIconTag {
+    param(
+        [Parameter(ValueFromPipeline = $true)]
+        [PSCustomObject]
+        $Context
+    )
+
+    [string]$output = "";
+
+    $icons = ConvertTo-CdfIcons -Context $Context
+
+    if ($icons) {
+        $output = "\nIcons: $icons"
+    }
 
     Write-Output $output
 }
@@ -194,7 +212,7 @@ function ConvertTo-CdfLine {
         $gametext = ConvertTo-CdfGameText -Context $Context
         $hyperspeed = $Context.front.hyperspeed
         $icons = ConvertTo-CdfIcons -Context $Context
-        # $iconTag = ConvertTo-CdfIconTag -Icons $icons
+        $iconTag = ConvertTo-CdfIconTag -Context $Context
         $image = ConvertTo-CdfImage -Context $Context
         $landspeed = $Context.front.landspeed
         $lore = $Context.front.lore
@@ -204,18 +222,18 @@ function ConvertTo-CdfLine {
         $side = $Context.side
         $subType = $Context.front.subType
         $title = ConvertTo-CdfTitle -Context $Context
-        $titleSort = ConvertTo-CdfTitleSort -Context $Context
+        # $titleSort = ConvertTo-CdfTitleSort -Context $Context
         $type = $Context.front.type
         $uniqueness = $Context.front.uniqueness
-        $section = ConvertTo-CdfSection -Context $Context
+        # $section = ConvertTo-CdfSection -Context $Context
 
         $output =
         switch ($type) {
             "Admiral's Order" {
-                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set$icons\n\nText: $gametext`""
+                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set$iconTag\n\nText: $gametext`""
             }
             "Character" {
-                "card `"$image`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\nPower: $power Ability: $ability$extraText\nDeploy: $deploy Forfeit: $forfeit$icons\n\nLore: $lore\n\nText: $gametext`""
+                "card `"$image`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\nPower: $power Ability: $ability$extraText\nDeploy: $deploy Forfeit: $forfeit$iconTag\n\nLore: $lore\n\nText: $gametext`""
             }
             "Creature" {
                 switch ($id) {
@@ -226,7 +244,7 @@ function ConvertTo-CdfLine {
                         $defenseValue = "{DEFENSE}: {VALUE}"   
                     }
                 }
-                "card `"$image`" `"$title ($rarity)\n$side $type- $subType [$rarity]\nSet: $set\nPower: $power $defenseValue\nDeploy: $deploy Forfeit: $forfeit$icons\n\nLore: $lore\n\nText: $gametext`""
+                "card `"$image`" `"$title ($rarity)\n$side $type- $subType [$rarity]\nSet: $set\nPower: $power $defenseValue\nDeploy: $deploy Forfeit: $forfeit$iconTag\n\nLore: $lore\n\nText: $gametext`""
             }
             "Defensive Shield" {
                 "card `"/$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nLore: $lore\n\nText: $gametext`""
@@ -268,13 +286,13 @@ function ConvertTo-CdfLine {
                 if ($uniqueness -contains "*") {
                     $uniqueness = ""
                 }
-                "card `"$image`" `"$uniqueness$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set$icons\n\nText:\n{TODO: EDIT GAME TEXT}$gametext`""
+                "card `"$image`" `"$uniqueness$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set$iconTag\n\nText:\n{TODO: EDIT GAME TEXT}$gametext`""
             }
             "Objective" {
-                "card `"/TWOSIDED$image`" `"$title (0/7)\n$side $type [$rarity]\nSet: $set$icons\n{TODO: EDIT GAME TEXT}$gametext`""
+                "card `"/TWOSIDED$image`" `"$title (0/7)\n$side $type [$rarity]\nSet: $set$iconTag\n{TODO: EDIT GAME TEXT}$gametext`""
             }
             "Podracer" {
-                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set$icons\n\nLore: $lore\n\nText: $gametext`""
+                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set$iconTag\n\nLore: $lore\n\nText: $gametext`""
             }
             "Starship" {
                 "card `"$image`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\nPower: $power Armor: $armor Hyperspeed: $hyperspeed\nDeploy: $deploy Forfeit: $forfeit$icons\n\nLore: $lore\n\nText: $gametext`""
@@ -327,7 +345,7 @@ function ConvertTo-CdfTitle {
 
     [string]$output = "";
 
-    $output = $Context.front.title.Replace("<>", "").Replace("•", "�")
+    $output = $Context.front.title.Replace("<>", "")
 
     Write-Output $output
 }
