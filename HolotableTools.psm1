@@ -75,8 +75,11 @@ function ConvertTo-Cdf {
         Remove-Item -Path $CdfPath
     }
 
+    #region header version
     "version {0}" -f $(Get-Date -Format "yyyyMMdd") | Add-Content -Path $CdfPath
-
+    #endregion header version
+    
+    #region header gif
     if ($CdfPath.EndsWith("Dark.cdf")) {
         "back imp.gif" | Add-Content -Path $CdfPath
     }
@@ -86,7 +89,8 @@ function ConvertTo-Cdf {
     else {
         "back placeholder.gif" | Add-Content -Path $CdfPath
     }
-    
+    #endregion header gif
+
     [string]$PreviousSection = ""
 
     Get-Content -Path $JsonPath |
@@ -120,7 +124,9 @@ function ConvertTo-Cdf {
     } |
     Add-Content -Path $CdfPath
 }
-function ConvertTo-CdfGameText {
+
+function ConvertTo-CdfAbility {
+    [CmdletBinding()]
     param(
         [Parameter(ValueFromPipeline = $true)]
         [PSCustomObject]
@@ -130,14 +136,150 @@ function ConvertTo-CdfGameText {
     [string]$output = "";
 
     try {
-        if ($Context.front.gametext) {
-            $output = $Context.front.gametext.Replace("Dark:  ", "DARK ($DarkSideIcons): ").Replace("Light:  ", "LIGHT ($LightSideIcons): ")
-        }
+        $output = $Context.front.ability
     }
     catch {
-        Write-Error "FAILED TO PARSE GAMETEXT"
-        Write-Host $Context -ForegroundColor Red
-        $output = "FAILED TO PARSE GAMETEXT"
+        Write-Debug "`tFailed to find or parse Ability."
+    }
+
+    Write-Output $output
+}
+
+function ConvertTo-CdfArmor {
+    [CmdletBinding()]
+    param(
+        [Parameter(ValueFromPipeline = $true)]
+        [PSCustomObject]
+        $Context
+    )
+
+    [string]$output = "";
+
+    try {
+        $output = $Context.front.armor
+    }
+    catch {
+        Write-Debug "`tFailed to find or parse Armor."
+    }
+
+    Write-Output $output
+}
+
+function ConvertTo-CdfDeploy {
+    [CmdletBinding()]
+    param(
+        [Parameter(ValueFromPipeline = $true)]
+        [PSCustomObject]
+        $Context
+    )
+
+    [string]$output = "";
+
+    try {
+        $output = $Context.front.deploy
+    }
+    catch {
+        Write-Debug "`tFailed to find or parse Deploy."
+    }
+
+    Write-Output $output
+}
+
+function ConvertTo-CdfDestiny {
+    [CmdletBinding()]
+    param(
+        [Parameter(ValueFromPipeline = $true)]
+        [PSCustomObject]
+        $Context
+    )
+
+    [string]$output = "";
+
+    try {
+        $output = $Context.front.destiny
+    }
+    catch {
+        Write-Debug "`tFailed to find or parse Destiny."
+    }
+
+    Write-Output $output
+}
+
+function ConvertTo-CdfExtraText {
+    [CmdletBinding()]
+    param(
+        [Parameter(ValueFromPipeline = $true)]
+        [PSCustomObject]
+        $Context
+    )
+
+    [string]$output = "";
+
+    try {
+        $output = $Context.front.extraText
+    }
+    catch {
+        Write-Debug "`tFailed to find or parse ExtraText."
+    }
+
+    Write-Output $output
+}
+
+function ConvertTo-CdfForfeit {
+    [CmdletBinding()]
+    param(
+        [Parameter(ValueFromPipeline = $true)]
+        [PSCustomObject]
+        $Context
+    )
+
+    [string]$output = "";
+
+    try {
+        $output = $Context.front.forfeit
+    }
+    catch {
+        Write-Debug "`tFailed to find or parse Forfeit."
+    }
+
+    Write-Output $output
+}
+
+function ConvertTo-CdfGameText {
+    [CmdletBinding()]
+    param(
+        [Parameter(ValueFromPipeline = $true)]
+        [PSCustomObject]
+        $Context
+    )
+
+    [string]$output = "";
+
+    try {
+        $output = $Context.front.gametext.Replace("Dark:  ", "DARK ($DarkSideIcons): ").Replace("Light:  ", "LIGHT ($LightSideIcons): ")
+    }
+    catch {
+        Write-Debug "`tFailed to find or parse GameText."
+    }
+
+    Write-Output $output
+}
+
+function ConvertTo-CdfHypderspeed {
+    [CmdletBinding()]
+    param(
+        [Parameter(ValueFromPipeline = $true)]
+        [PSCustomObject]
+        $Context
+    )
+
+    [string]$output = "";
+
+    try {
+        $output = $Context.front.hyperspeed
+    }
+    catch {
+        Write-Debug "`tFailed to find or parse Hypderspeed."
     }
 
     Write-Output $output
@@ -157,23 +299,23 @@ function ConvertTo-CdfIcons {
     Write-Output $output
 }
 
-function ConvertTo-CdfIconTag {
-    param(
-        [Parameter(ValueFromPipeline = $true)]
-        [PSCustomObject]
-        $Context
-    )
+# function ConvertTo-CdfIconTag {
+#     param(
+#         [Parameter(ValueFromPipeline = $true)]
+#         [PSCustomObject]
+#         $Context
+#     )
 
-    [string]$output = "";
+#     [string]$output = "";
 
-    $icons = ConvertTo-CdfIcons -Context $Context
+#     $icons = ConvertTo-CdfIcons -Context $Context
 
-    if ($icons) {
-        $output = "\nIcons: $icons"
-    }
+#     if ($icons) {
+#         $output = "\nIcons: $icons"
+#     }
 
-    Write-Output $output
-}
+#     Write-Output $output
+# }
 
 function ConvertTo-CdfImage {
     param(
@@ -189,6 +331,45 @@ function ConvertTo-CdfImage {
     Write-Output $output
 }
 
+function ConvertTo-CdfLandspeed {
+    [CmdletBinding()]
+    param(
+        [Parameter(ValueFromPipeline = $true)]
+        [PSCustomObject]
+        $Context
+    )
+
+    [string]$output = "";
+
+    try {
+        $output = $Context.front.landspeed
+    }
+    catch {
+        Write-Debug "`tFailed to find or parse Landspeed."
+    }
+
+    Write-Output $output
+}
+
+function Get-TagString {
+    param(
+        [Parameter(ValueFromPipeline = $true)]
+        [PSCustomObject]
+        $Context,
+
+        [string]
+        $TagName,
+        [string]
+        $TagValue
+    )
+
+    [string]$output = ""
+
+    if ($TagValue -ne "") { $output = "{0}: {1}" -f $TagName, $TagValue }
+
+    Write-Output $output
+}
+
 function ConvertTo-CdfLine {
     param(
         [Parameter(ValueFromPipeline = $true)]
@@ -197,40 +378,45 @@ function ConvertTo-CdfLine {
     )
 
     [string]$output = "";
-    $id = $Context.id
+
+    Write-Verbose "Parsing $($Context.id)..."
 
     try {
-        $ability = $Context.front.ability
-        $armor = $Contextfront.armor
-        $deploy = $Context.front.deploy
-        $destiny = $Context.front.destiny
-        $extraText = $Context.front.extraText
-        if ($extraText) {
-            $extraText = " $extraText"
-        }
-        $forfeit = $Context.front.forfeit
+        $ability = ConvertTo-CdfAbility -Context $Context
+        $armor = ConvertTo-CdfAbility -Context $Context
+        $deploy = ConvertTo-CdfDeploy -Context $Context
+        $destiny = ConvertTo-CdfDestiny -Context $Context
+        $extraText = ConvertTo-CdfExtraText -Context $Context
+        $forfeit = ConvertTo-CdfForfeit -Context $Context
         $gametext = ConvertTo-CdfGameText -Context $Context
-        $hyperspeed = $Context.front.hyperspeed
+        $hyperspeed = ConvertTo-CdfHypderspeed -Context $Context
         $icons = ConvertTo-CdfIcons -Context $Context
-        $iconTag = ConvertTo-CdfIconTag -Context $Context
+        $iconsTag = Get-TagString -Context $Context -TagName "Icons" -TagValue $icons
         $image = ConvertTo-CdfImage -Context $Context
-        $landspeed = $Context.front.landspeed
-        $lore = $Context.front.lore
-        $power = $Context.front.power
-        $rarity = $Context.rarity
-        $set = $Context.set
-        $side = $Context.side
-        $subType = $Context.front.subType
+        $landspeed = ConvertTo-CdfLandspeed -Context $Context
+        $lore = ConvertTo-CdfLore -Context $Context
+        $power = ConvertTo-CdfPower -Context $Context
+        $rarity = ConvertTo-CdfRarity -Context $Context
+        $set = ConvertTo-CdfSet -Context $Context
+        $setTag = Get-TagString -Context $Context -TagName "Set" -TagValue $set
+        $side = ConvertTo-CdfSide -Context $Context
+        $subType = ConvertTo-CdfSubType -Context $Context
         $title = ConvertTo-CdfTitle -Context $Context
-        # $titleSort = ConvertTo-CdfTitleSort -Context $Context
-        $type = $Context.front.type
-        $uniqueness = $Context.front.uniqueness
-        # $section = ConvertTo-CdfSection -Context $Context
+        $type = ConvertTo-CdfType -Context $Context
+        $uniqueness = ConvertTo-CdfUniqueness -Context $Context
+
+        $part0 = $image
+        $part1 = "{0} ({1})\n" -f $title, $destiny
+        $part2 = "{0} {1} [{2}]\n" -f $side, $type, $rarity
+        $part3 = "{0}\n{1}\n" -f $setTag, $iconsTag
+        $part4 = "\n"
+        $part5 = "Text: $gametext"
 
         $output =
         switch ($type) {
             "Admiral's Order" {
-                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set$iconTag\n\nText: $gametext`""
+                # "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set$iconTag\n\nText: $gametext`""
+                "card `"{0}`" `"{1}{2}{3}{4}{5}`"" -f $part0, $part1, $part2, $part3, $part4, $part5
             }
             "Character" {
                 "card `"$image`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\nPower: $power Ability: $ability$extraText\nDeploy: $deploy Forfeit: $forfeit$iconTag\n\nLore: $lore\n\nText: $gametext`""
@@ -244,43 +430,43 @@ function ConvertTo-CdfLine {
                         $defenseValue = "{DEFENSE}: {VALUE}"   
                     }
                 }
-                "card `"$image`" `"$title ($rarity)\n$side $type- $subType [$rarity]\nSet: $set\nPower: $power $defenseValue\nDeploy: $deploy Forfeit: $forfeit$iconTag\n\nLore: $lore\n\nText: $gametext`""
+                "card `"$image`" `"$title ($rarity)\n$side $type- $subType [$rarity]\nSet: $set$iconTag\nPower: $power $defenseValue\nDeploy: $deploy Forfeit: $forfeit$iconTag\n\nLore: $lore\n\nText: $gametext`""
             }
             "Defensive Shield" {
-                "card `"/$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nLore: $lore\n\nText: $gametext`""
+                "card `"/$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set$iconTag\n\nLore: $lore\n\nText: $gametext`""
             }
             "Device" {
-                "card `"$image`" `"$title ($rarity)\n$side $type [$rarity]\nSet: $set\n\nLore: $lore\n\nText: $gametext`""
+                "card `"$image`" `"$title ($rarity)\n$side $type [$rarity]\nSet: $set$iconTag\n\nLore: $lore\n\nText: $gametext`""
             }
             "Effect" {
-                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nLore: $lore\n\nText: $gametext`""
+                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set$iconTag\n\nLore: $lore\n\nText: $gametext`""
             }
             "Epic Event" {
-                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nText: $gametext`""
+                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set$iconTag\n\nText: $gametext`""
             }
             "Game Aid" {
-                "card `"$image`" `"$title ($destiny)\n$side $type [$rariry]\nSet: $set\nText: $text`""
+                "card `"$image`" `"$title ($destiny)\n$side $type [$rariry]\nSet: $set$iconTag\nText: $text`""
             }
             "Interrupt" {
-                "card `"$image`" `"$title ($destiny)\n$side $type - $subtype [$rarity]\nSet: $set\n\nLore: $lore\n\nText: $gametext`""
+                "card `"$image`" `"$title ($destiny)\n$side $type - $subtype [$rarity]\nSet: $set$iconTag\n\nLore: $lore\n\nText: $gametext`""
             }
             "Jedi Test #1" {
-                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nText: $gametext`""
+                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set$iconTag\n\nText: $gametext`""
             }
             "Jedi Test #2" {
-                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nText: $gametext`""
+                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set$iconTag\n\nText: $gametext`""
             }
             "Jedi Test #3" {
-                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nText: $gametext`""
+                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set$iconTag\n\nText: $gametext`""
             }
             "Jedi Test #4" {
-                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nText: $gametext`""
+                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set$iconTag\n\nText: $gametext`""
             }
             "Jedi Test #5" {
-                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nText: $gametext`""
+                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set$iconTag\n\nText: $gametext`""
             }
             "Jedi Test #6" {
-                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set\n\nText: $gametext`""
+                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set$iconTag\n\nText: $gametext`""
             }
             "Location" {
                 if ($uniqueness -contains "*") {
@@ -295,13 +481,13 @@ function ConvertTo-CdfLine {
                 "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set$iconTag\n\nLore: $lore\n\nText: $gametext`""
             }
             "Starship" {
-                "card `"$image`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\nPower: $power Armor: $armor Hyperspeed: $hyperspeed\nDeploy: $deploy Forfeit: $forfeit$icons\n\nLore: $lore\n\nText: $gametext`""
+                "card `"$image`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set$iconTag\nPower: $power Armor: $armor Hyperspeed: $hyperspeed\nDeploy: $deploy Forfeit: $forfeit$icons\n\nLore: $lore\n\nText: $gametext`""
             }
             "Vehicle" {
-                "card `"$image`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\nPower: $power Armor: $armor Landspeed: $landspeed\nDeploy: $deploy Forfeit: $forfeit$icons\n\nLore: $lore\n\nText: $gametext`""
+                "card `"$image`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set$iconTag\nPower: $power Armor: $armor Landspeed: $landspeed\nDeploy: $deploy Forfeit: $forfeit$icons\n\nLore: $lore\n\nText: $gametext`""
             }
             "Weapon" {
-                "card `"$image`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\n\nLore: $lore\n\nText: $gametext`""
+                "card `"$image`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set$iconTag\n\nLore: $lore\n\nText: $gametext`""
             }
             default {
                 Write-Warning "Type = $type, Title = $title, Error = Card type not supported."
@@ -309,9 +495,67 @@ function ConvertTo-CdfLine {
         }
     }
     catch {
-        Write-Host "FAILED TO PARSE $id" -ForegroundColor Red
-        Write-Host $_.Exception.Message
-        $output = "FAILED TO PARSE $id"
+        Write-Error "`tFailed to parse Line."
+    }
+
+    Write-Output $output
+}
+
+function ConvertTo-CdfLore {
+    [CmdletBinding()]
+    param(
+        [Parameter(ValueFromPipeline = $true)]
+        [PSCustomObject]
+        $Context
+    )
+
+    [string]$output = "";
+
+    try {
+        $output = $Context.front.lore
+    }
+    catch {
+        Write-Debug "`tFailed to find or parse Lore."
+    }
+
+    Write-Output $output
+}
+
+function ConvertTo-CdfPower {
+    [CmdletBinding()]
+    param(
+        [Parameter(ValueFromPipeline = $true)]
+        [PSCustomObject]
+        $Context
+    )
+
+    [string]$output = "";
+
+    try {
+        $output = $Context.front.power
+    }
+    catch {
+        Write-Debug "`tFailed to find or parse Power."
+    }
+
+    Write-Output $output
+}
+
+function ConvertTo-CdfRarity {
+    [CmdletBinding()]
+    param(
+        [Parameter(ValueFromPipeline = $true)]
+        [PSCustomObject]
+        $Context
+    )
+
+    [string]$output = "";
+
+    try {
+        $output = $Context.rarity
+    }
+    catch {
+        Write-Debug "`tFailed to find or parse Rarity."
     }
 
     Write-Output $output
@@ -326,17 +570,23 @@ function ConvertTo-CdfSection {
 
     [string]$output = "";
 
-    if ($Context.front.subType) {
-        $output = $("[{0} - {1}]" -f $Context.front.type, $Context.front.subType.Split(":")[0]).Replace(" - ]", "]")
+    try {
+        if ($Context.front.subType) {
+            $output = $("[{0} - {1}]" -f $Context.front.type, $Context.front.subType.Split(":")[0]).Replace(" - ]", "]")
+        }
+        else {
+            $output = "[{0}]" -f $Context.front.type
+        }
     }
-    else {
-        $output = "[{0}]" -f $Context.front.type
+    catch {
+        Write-Debug "`tFailed to find or parse Section."
     }
 
     Write-Output $output
 }
 
-function ConvertTo-CdfTitle {
+function ConvertTo-CdfSet {
+    [CmdletBinding()]
     param(
         [Parameter(ValueFromPipeline = $true)]
         [PSCustomObject]
@@ -345,13 +595,79 @@ function ConvertTo-CdfTitle {
 
     [string]$output = "";
 
-    $output = $Context.front.title.Replace("<>", "")
+    try {
+        $output = $Context.set
+    }
+    catch {
+        Write-Debug "`tFailed to find or parse Set."
+    }
+
+    Write-Output $output
+}
+
+function ConvertTo-CdfSide {
+    [CmdletBinding()]
+    param(
+        [Parameter(ValueFromPipeline = $true)]
+        [PSCustomObject]
+        $Context
+    )
+
+    [string]$output = "";
+
+    try {
+        $output = $Context.side
+    }
+    catch {
+        Write-Debug "`tFailed to find or parse Side."
+    }
+
+    Write-Output $output
+}
+
+function ConvertTo-CdfSubType {
+    [CmdletBinding()]
+    param(
+        [Parameter(ValueFromPipeline = $true)]
+        [PSCustomObject]
+        $Context
+    )
+
+    [string]$output = "";
+
+    try {
+        $output = $Context.front.subType
+    }
+    catch {
+        Write-Debug "`tFailed to find or parse SubType."
+    }
+
+    Write-Output $output
+}
+
+function ConvertTo-CdfTitle {
+    [CmdletBinding()]
+    param(
+        [Parameter(ValueFromPipeline = $true)]
+        [PSCustomObject]
+        $Context
+    )
+
+    [string]$output = "";
+
+    try {
+        $output = $Context.front.title.Replace("<>", "")
+    }
+    catch {
+        Write-Debug "`tFailed to find or parse Title."
+    }
 
     Write-Output $output
 }
 
 
 function ConvertTo-CdfTitleSort {
+    [CmdletBinding()]
     param (
         [Parameter(ValueFromPipeline = $true)]
         [PSCustomObject]
@@ -360,31 +676,52 @@ function ConvertTo-CdfTitleSort {
 
     [string]$output = "";
 
-    $output = $Context.front.title.Replace("<>", "").Replace("•", "")
+    try {
+        $output = $Context.front.title.Replace("<>", "").Replace("•", "")
+    }
+    catch {
+        Write-Debug "`tFailed to find or parse TitleSort."
+    }
 
     Write-Output $output
 }
 
-# function Get-JsonById {
-#     param (
-#         [Parameter(Mandatory = $true)]
-#         [int]
-#         $Id,
+function ConvertTo-CdfType {
+    [CmdletBinding()]
+    param(
+        [Parameter(ValueFromPipeline = $true)]
+        [PSCustomObject]
+        $Context
+    )
 
-#         [ValidateSet("Dark", "Light")]
-#         [Parameter(Mandatory = $true)]
-#         [string]
-#         $Side,
+    [string]$output = "";
 
-#         [ValidateScript( { Test-Path -Path $_ -PathType "Container" })]
-#         [string]
-#         $RepoPath = "~/source/repos/swccg-card-json"
-#     )
+    try {
+        $output = $Context.front.type
+    }
+    catch {
+        Write-Debug "`tFailed to find or parse Type."
+    }
 
-#     $JsonPath = Join-Path -Path $RepoPath -ChildPath "$Side.json"
+    Write-Output $output
+}
 
-#     Get-Content -Path $JsonPath |
-#     ConvertFrom-Json |
-#     Select-Object -ExpandProperty "cards" |
-#     Where-Object { $_.id -eq $Id }
-# }
+function ConvertTo-CdfUniqueness {
+    [CmdletBinding()]
+    param(
+        [Parameter(ValueFromPipeline = $true)]
+        [PSCustomObject]
+        $Context
+    )
+
+    [string]$output = "";
+
+    try {
+        $output = $Context.front.uniqueness
+    }
+    catch {
+        Write-Debug "`tFailed to find or parse Type."
+    }
+
+    Write-Output $output
+}

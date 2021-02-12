@@ -1,6 +1,4 @@
-$Cdf = Get-Content /home/ronhowe/source/repos/holotable/lightside.cdf
-
-$Cdf |
+Get-Content -Path "~/source/repos/holotable/darkside.cdf" |
 ForEach-Object {
     if ($_ -ne "") {
         $count = 0
@@ -10,7 +8,9 @@ ForEach-Object {
     }
  
     if ($count -lt 2) {
-        Write-Output $_
+        if (-not ($_.StartsWith("card `"/legacy"))) {
+            Write-Output $_
+        }
     }
 } |
-Set-Content /home/ronhowe/source/repos/holotable/lightside.cdf
+Set-Content -Path "~/source/repos/holotable/darkside2.cdf" -Encoding utf8
