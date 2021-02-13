@@ -237,7 +237,15 @@ function ConvertTo-CdfForfeit {
     [string]$output = "";
 
     try {
-        $output = $Context.front.forfeit
+        switch ($Context.id) {
+            1073 {
+                # Greedo
+                $output = "1/2"
+            }
+            default {
+                $output = $Context.front.forfeit
+            }
+        }
     }
     catch {
         Write-Debug "`tFailed to find or parse Forfeit."
@@ -417,7 +425,7 @@ function ConvertTo-CdfLine {
         $gametextTag = Get-TagString -Context $Context -TagName "Text" -TagValue $gametext
         $title = ConvertTo-CdfTitle -Context $Context
         $type = ConvertTo-CdfType -Context $Context
-        $uniqueness = ConvertTo-CdfUniqueness -Context $Context
+        # $uniqueness = ConvertTo-CdfUniqueness -Context $Context
 
         # $defenseValueTag = "{0}{1}{2}" -f $abilityTag, $armorTag, $maneuverTag
         # $speedTag = "{0}{1}" -f $hyperspeedTag, $landspeedTag
@@ -428,7 +436,8 @@ function ConvertTo-CdfLine {
                 $line0 = "{0} ({1})\n" -f $title, $destiny
                 $line1 = "{0} {1} [{2}]\n" -f $side, $type, $rarity
                 $line2 = "{0}\n" -f $setTag
-                $line3 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
+                # $line3 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
+                $line3 = "{0}\n" -f $iconsTag
                 $line4 = "{0}" -f $gametextTag
 
                 "card `"$image`" `"{0}{1}{2}{3}{4}`"" -f $line0, $line1, $line2, $line3, $line4
@@ -437,7 +446,7 @@ function ConvertTo-CdfLine {
                 $line0 = "{0} ({1})\n" -f $title, $destiny
                 $line1 = "{0} {1} - {2} [{3}]\n" -f $side, $type, $subType, $rarity
                 $line2 = "{0}\n" -f $setTag
-                $line3 = @($powerTag, $abilityTag, $armorTag, $politicsTag, $extraText) | ConcatChunks
+                $line3 = @($powerTag, $abilityTag, $armorTag, $maneuverTag, $politicsTag, $extraText) | ConcatChunks
                 $line4 = "{0} {1}\n" -f $deployTag, $forfeitTag
                 $line5 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
                 $line6 = "{0}\n" -f $loreTag
@@ -941,7 +950,7 @@ function ConvertTo-CdfSet {
     [string]$output = "";
 
     try {
-        $output = $Context.set
+        $output = $Context.set.Replace("Virtual ", "")
     }
     catch {
         Write-Debug "`tFailed to find or parse Set."
