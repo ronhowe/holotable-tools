@@ -593,7 +593,7 @@ function ConvertTo-CdfLine {
                         $line2 = "{0}\n" -f $setTag
                         $line3 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
                         $line4 = if ($parsecTag -ne "") { "{0}\n" -f $parsecTag } else { "" }
-                        $line5 = "{0}" -f $gametextTag.Replace("Dark:", "DARK ($darkSideIcons):").Replace("Light:", "LIGHT ($lightSideIcons):").Replace("Text: DARK(", "Text:\nDARK (").Replace("Text: LIGHT(", "Text:\nLIGHT (")
+                        $line5 = "{0}" -f $gametextTag.Replace("Dark:  ", "DARK ($darkSideIcons): ").Replace("Light:  ", "LIGHT ($lightSideIcons): ").Replace("Text: DARK (", "Text:\nDARK (").Replace("Text: LIGHT (", "Text:\nLIGHT (").Replace(".  DARK (", ".\n\nDARK (").Replace(".  LIGHT (", ".\n\nLIGHT (")
 
                         "card `"$image`" `"{0}{1}{2}{3}{4}\n{5}`"" -f $line0, $line1, $line2, $line3, $line4, $line5
                     }
