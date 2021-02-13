@@ -98,7 +98,8 @@ function ConvertTo-Cdf {
     Select-Object -ExpandProperty "cards" |
     Where-Object {
         if ($PSCmdlet.ParameterSetName -eq "NoFilter") {
-            $_.legacy -eq $false
+            $true
+            # $_.legacy -eq $false
         }
         elseif ($PSCmdlet.ParameterSetName -eq "IdFilter") {
             $_.id -eq $IdFilter
@@ -367,6 +368,8 @@ function Get-TagString {
 
     if ($TagValue -ne "") { $output = "{0}: {1}" -f $TagName, $TagValue }
 
+    $output = $output.Trim()
+
     Write-Output $output
 }
 
@@ -379,47 +382,69 @@ function ConvertTo-CdfLine {
 
     [string]$output = "";
 
-    Write-Verbose "Parsing $($Context.id)..."
+    $id = $Context.id
+    Write-Verbose "Parsing $id..."
 
     try {
         $ability = ConvertTo-CdfAbility -Context $Context
-        $armor = ConvertTo-CdfAbility -Context $Context
+        $abilityTag = Get-TagString -Context $Context -TagName "Ability" -TagValue $ability
+        $armor = ConvertTo-CdfArmor -Context $Context
+        $armorTag = Get-TagString -Context $Context -TagName "Armor" -TagValue $armor
         $deploy = ConvertTo-CdfDeploy -Context $Context
+        $deployTag = Get-TagString -Context $Context -TagName "Deploy" -TagValue $deploy
         $destiny = ConvertTo-CdfDestiny -Context $Context
         $extraText = ConvertTo-CdfExtraText -Context $Context
         $forfeit = ConvertTo-CdfForfeit -Context $Context
+        $forfeitTag = Get-TagString -Context $Context -TagName "Forfeit" -TagValue $forfeit
         $gametext = ConvertTo-CdfGameText -Context $Context
         $hyperspeed = ConvertTo-CdfHypderspeed -Context $Context
+        $hyperspeedTag = Get-TagString -Context $Context -TagName "Hyperspeed" -TagValue $hyperspeed
         $icons = ConvertTo-CdfIcons -Context $Context
         $iconsTag = Get-TagString -Context $Context -TagName "Icons" -TagValue $icons
         $image = ConvertTo-CdfImage -Context $Context
         $landspeed = ConvertTo-CdfLandspeed -Context $Context
+        $landspeedTag = Get-TagString -Context $Context -TagName "Landspeed" -TagValue $landspeed
         $lore = ConvertTo-CdfLore -Context $Context
+        $loreTag = Get-TagString -Context $Context -TagName "Lore" -TagValue $lore
+        $maneuver = ConvertTo-CdfManeuver -Context $Context
+        $maneuverTag = Get-TagString -Context $Context -TagName "Maneuver" -TagValue $maneuver
         $power = ConvertTo-CdfPower -Context $Context
+        $powerTag = Get-TagString -Context $Context -TagName "Power" -TagValue $power
         $rarity = ConvertTo-CdfRarity -Context $Context
         $set = ConvertTo-CdfSet -Context $Context
         $setTag = Get-TagString -Context $Context -TagName "Set" -TagValue $set
         $side = ConvertTo-CdfSide -Context $Context
         $subType = ConvertTo-CdfSubType -Context $Context
+        $textTag = Get-TagString -Context $Context -TagName "Text" -TagValue $gametext
         $title = ConvertTo-CdfTitle -Context $Context
         $type = ConvertTo-CdfType -Context $Context
         $uniqueness = ConvertTo-CdfUniqueness -Context $Context
 
-        $part0 = $image
-        $part1 = "{0} ({1})\n" -f $title, $destiny
-        $part2 = "{0} {1} [{2}]\n" -f $side, $type, $rarity
-        $part3 = "{0}\n{1}\n" -f $setTag, $iconsTag
-        $part4 = "\n"
-        $part5 = "Text: $gametext"
+        $defenseValueTag = "{0}{1}{2}" -f $abilityTag, $armorTag, $maneuverTag
+        $speedTag = "{0}{1}" -f $hyperspeedTag, $landspeedTag
 
         $output =
         switch ($type) {
             "Admiral's Order" {
-                # "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set$iconTag\n\nText: $gametext`""
-                "card `"{0}`" `"{1}{2}{3}{4}{5}`"" -f $part0, $part1, $part2, $part3, $part4, $part5
+                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\n$setTag $iconsTag\n\n$textTag`""
+                # "card `"{0}`" `"{1}{2}{3}{4}{5}`"" -f $part0, $part1, $part2, $part3, $part4, $part5
             }
             "Character" {
-                "card `"$image`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set\nPower: $power Ability: $ability$extraText\nDeploy: $deploy Forfeit: $forfeit$iconTag\n\nLore: $lore\n\nText: $gametext`""
+                $line0 = "{0} ({1})\n" -f $title, $destiny
+                $line1 = "{0} {1} - {2} [{3}]\n" -f $side, $type, $subType, $rarity
+                $line2 = "{0}\n" -f $setTag
+                if ($extraText -ne "") {
+                    $line3 = "{0} {1} {2}\n" -f $powerTag, $defenseValueTag, $extraText
+                }
+                else {
+                    $line3 = "{0} {1}\n" -f $powerTag, $defenseValueTag
+                }
+                $line4 = "{0} {1}\n" -f $deployTag, $forfeitTag
+                $line5 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
+                $line6 = "{0}\n" -f $loreTag
+                $line7 = "{0}" -f $textTag
+
+                "card `"$image`" `"{0}{1}{2}{3}{4}{5}\n{6}\n{7}`"" -f $line0, $line1, $line2, $line3, $line4, $line5, $line6, $line7
             }
             "Creature" {
                 switch ($id) {
@@ -430,64 +455,120 @@ function ConvertTo-CdfLine {
                         $defenseValue = "{DEFENSE}: {VALUE}"   
                     }
                 }
-                "card `"$image`" `"$title ($rarity)\n$side $type- $subType [$rarity]\nSet: $set$iconTag\nPower: $power $defenseValue\nDeploy: $deploy Forfeit: $forfeit$iconTag\n\nLore: $lore\n\nText: $gametext`""
+                "card `"$image`" `"$title ($rarity)\n$side $type- $subType [$rarity]\n$setTag $iconsTag\nPower: $power $defenseValue\nDeploy: $deploy Forfeit: $forfeit$iconTag\n\nLore: $lore\n\n$textTag`""
             }
             "Defensive Shield" {
-                "card `"/$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set$iconTag\n\nLore: $lore\n\nText: $gametext`""
+                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\n$setTag $iconsTag\n\nLore: $lore\n\n$textTag`""
             }
             "Device" {
-                "card `"$image`" `"$title ($rarity)\n$side $type [$rarity]\nSet: $set$iconTag\n\nLore: $lore\n\nText: $gametext`""
+                "card `"$image`" `"$title ($rarity)\n$side $type [$rarity]\n$setTag $iconsTag\n\nLore: $lore\n\n$textTag`""
             }
             "Effect" {
-                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set$iconTag\n\nLore: $lore\n\nText: $gametext`""
+                $line0 = "{0} ({1})\n" -f $title, $destiny
+                $line1 = "{0} {1} [{2}]\n" -f $side, $type, $rarity
+                $line2 = "{0}\n" -f $setTag
+                $line3 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
+                $line4 = "{0}\n" -f $loreTag
+                $line5 = "{0}" -f $textTag
+
+                "card `"$image`" `"{0}{1}{2}{3}\n{4}\n{5}`"" -f $line0, $line1, $line2, $line3, $line4, $line5
             }
             "Epic Event" {
-                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set$iconTag\n\nText: $gametext`""
+                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\n$setTag $iconsTag\n\n$textTag`""
             }
             "Game Aid" {
-                "card `"$image`" `"$title ($destiny)\n$side $type [$rariry]\nSet: $set$iconTag\nText: $text`""
+                "card `"$image`" `"$title ($destiny)\n$side $type [$rariry]\n$setTag $iconsTag\nText: $text`""
             }
             "Interrupt" {
-                "card `"$image`" `"$title ($destiny)\n$side $type - $subtype [$rarity]\nSet: $set$iconTag\n\nLore: $lore\n\nText: $gametext`""
+                $line0 = "{0} ({1})\n" -f $title, $destiny
+                $line1 = "{0} {1} - {2} [{3}]\n" -f $side, $type, $subType, $rarity
+                $line2 = "{0}\n" -f $setTag
+                $line3 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
+                $line4 = "{0}\n" -f $loreTag
+                $line5 = "{0}" -f $textTag
+
+                "card `"$image`" `"{0}{1}{2}{3}\n{4}\n{5}`"" -f $line0, $line1, $line2, $line3, $line4, $line5
             }
             "Jedi Test #1" {
-                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set$iconTag\n\nText: $gametext`""
+                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\n$setTag $iconsTag\n\n$textTagt`""
             }
             "Jedi Test #2" {
-                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set$iconTag\n\nText: $gametext`""
+                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\n$setTag $iconsTag\n\n$textTag`""
             }
             "Jedi Test #3" {
-                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set$iconTag\n\nText: $gametext`""
+                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\n$setTag $iconsTag\n\n$textTag`""
             }
             "Jedi Test #4" {
-                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set$iconTag\n\nText: $gametext`""
+                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\n$setTag $iconsTag\n\n$textTag`""
             }
             "Jedi Test #5" {
-                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set$iconTag\n\nText: $gametext`""
+                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\n$setTag $iconsTag\n\n$textTag`""
             }
             "Jedi Test #6" {
-                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set$iconTag\n\nText: $gametext`""
+                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\n$setTag $iconsTag\n\n$textTag`""
             }
             "Location" {
                 if ($uniqueness -contains "*") {
                     $uniqueness = ""
                 }
-                "card `"$image`" `"$uniqueness$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set$iconTag\n\nText:\n{TODO: EDIT GAME TEXT}$gametext`""
+                "card `"$image`" `"$uniqueness$title ($destiny)\n$side $type - $subType [$rarity]\n$setTag $iconsTag\n\nText:\n{TODO: EDIT GAME TEXT}$gametext`""
+            }
+            "Mission" {
+                $line0 = "{0} ({1})\n" -f $title, $destiny
+                $line1 = "{0} {1} [{2}]\n" -f $side, $type, $rarity
+                $line2 = "{0}\n" -f $setTag
+                $line3 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
+                $line4 = "{0}\n" -f $loreTag
+                $line5 = "{0}" -f $textTag
+
+                "card `"$image`" `"{0}{1}{2}{3}\n{4}\n{5}`"" -f $line0, $line1, $line2, $line3, $line4, $line5
             }
             "Objective" {
-                "card `"/TWOSIDED$image`" `"$title (0/7)\n$side $type [$rarity]\nSet: $set$iconTag\n{TODO: EDIT GAME TEXT}$gametext`""
+                "card `"/TWOSIDED$image`" `"$title (0/7)\n$side $type [$rarity]\n$setTag $iconsTag\n{TODO: EDIT GAME TEXT}$gametext`""
             }
             "Podracer" {
-                "card `"$image`" `"$title ($destiny)\n$side $type [$rarity]\nSet: $set$iconTag\n\nLore: $lore\n\nText: $gametext`""
+                $line0 = "{0} ({1})\n" -f $title, $destiny
+                $line1 = "{0} {1} [{2}]\n" -f $side, $type, $rarity
+                $line2 = "{0}\n" -f $setTag
+                $line3 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
+                $line4 = "{0}\n" -f $loreTag
+                $line5 = "{0}" -f $textTag
+
+                "card `"$image`" `"{0}{1}{2}{3}\n{4}\n{5}`"" -f $line0, $line1, $line2, $line3, $line4, $line5
             }
             "Starship" {
-                "card `"$image`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set$iconTag\nPower: $power Armor: $armor Hyperspeed: $hyperspeed\nDeploy: $deploy Forfeit: $forfeit$icons\n\nLore: $lore\n\nText: $gametext`""
+                $line0 = "{0} ({1})\n" -f $title, $destiny
+                $line1 = "{0} {1} - {2} [{3}]\n" -f $side, $type, $subType, $rarity
+                $line2 = "{0}\n" -f $setTag
+                $line3 = "{0} {1} {2}\n" -f $powerTag, $defenseValueTag, $speedTag
+                $line4 = "{0} {1}\n" -f $deployTag, $forfeitTag
+                $line5 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
+                $line6 = "{0}\n" -f $loreTag
+                $line7 = "{0}" -f $textTag
+
+                "card `"$image`" `"{0}{1}{2}{3}{4}{5}\n{6}\n{7}`"" -f $line0, $line1, $line2, $line3, $line4, $line5, $line6, $line7
             }
             "Vehicle" {
-                "card `"$image`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set$iconTag\nPower: $power Armor: $armor Landspeed: $landspeed\nDeploy: $deploy Forfeit: $forfeit$icons\n\nLore: $lore\n\nText: $gametext`""
+                $line0 = "{0} ({1})\n" -f $title, $destiny
+                $line1 = "{0} {1} - {2} [{3}]\n" -f $side, $type, $subType, $rarity
+                $line2 = "{0}\n" -f $setTag
+                $line3 = "{0} {1} {2}\n" -f $powerTag, $defenseValueTag, $speedTag
+                $line4 = "{0} {1}\n" -f $deployTag, $forfeitTag
+                $line5 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
+                $line6 = "{0}\n" -f $loreTag
+                $line7 = "{0}" -f $textTag
+
+                "card `"$image`" `"{0}{1}{2}{3}{4}{5}\n{6}\n{7}`"" -f $line0, $line1, $line2, $line3, $line4, $line5, $line6, $line7
             }
             "Weapon" {
-                "card `"$image`" `"$title ($destiny)\n$side $type - $subType [$rarity]\nSet: $set$iconTag\n\nLore: $lore\n\nText: $gametext`""
+                $line0 = "{0} ({1})\n" -f $title, $destiny
+                $line1 = "{0} {1} - {2} [{3}]\n" -f $side, $type, $subType, $rarity
+                $line2 = "{0}\n" -f $setTag
+                $line3 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
+                $line4 = "{0}\n" -f $loreTag
+                $line5 = "{0}" -f $textTag
+
+                "card `"$image`" `"{0}{1}{2}{3}\n{4}\n{5}`"" -f $line0, $line1, $line2, $line3, $line4, $line5
             }
             default {
                 Write-Warning "Type = $type, Title = $title, Error = Card type not supported."
@@ -496,8 +577,9 @@ function ConvertTo-CdfLine {
     }
     catch {
         Write-Error "`tFailed to parse Line."
+        Write-Error $_
     }
-
+    Write-Debug $output
     Write-Output $output
 }
 
@@ -516,6 +598,26 @@ function ConvertTo-CdfLore {
     }
     catch {
         Write-Debug "`tFailed to find or parse Lore."
+    }
+
+    Write-Output $output
+}
+
+function ConvertTo-CdfManeuver {
+    [CmdletBinding()]
+    param(
+        [Parameter(ValueFromPipeline = $true)]
+        [PSCustomObject]
+        $Context
+    )
+
+    [string]$output = "";
+
+    try {
+        $output = $Context.front.maneuver
+    }
+    catch {
+        Write-Debug "`tFailed to find or parse Maneuver."
     }
 
     Write-Output $output
@@ -724,4 +826,33 @@ function ConvertTo-CdfUniqueness {
     }
 
     Write-Output $output
+}
+
+function SortAndSave () {
+    [CmdletBinding()]
+    param (
+        [Parameter()]
+        [string]
+        $CdfInputPath,
+
+        [Parameter()]
+        [string]
+        $CdfOutputPath
+    )
+
+    if (Test-Path -Path $CdfOutputPath) {
+        Remove-Item $CdfOutputPath -Force
+    }
+
+    if (Test-Path -Path $CdfInputPath) {
+        Get-Content -Path $CdfInputPath |
+        Where-Object {
+            ($_.StartsWith("card"))
+        } |
+        Sort-Object |
+        Add-Content -Path $CdfOutputPath
+    }
+    else {
+        Write-Host "Could not find $CdfInputPath"
+    }
 }
