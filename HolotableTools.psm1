@@ -263,7 +263,7 @@ function ConvertTo-CdfGameText {
             $output = "{0}\n\n{1}" -f $output, $Context.conceptBy
         }
 
-        @("LOST:", "USED:", "STARTING:", "Requirements:", "Wild cards (0-7):", "Clone cards:", "Stakes:") |
+        @("LOST:", "USED:", "STARTING:", "Requirements:", "Wild cards (0-7):", "Wild cards (1-6):", "Wild cards (2-7):", "Clone cards:", "Stakes:") |
         ForEach-Object {
             if ($output.Contains($_)) {
                 $output = $output.Replace($_, "\n$_") 
@@ -407,6 +407,8 @@ function ConvertTo-CdfLine {
         $parsecTag = Get-TagString -Context $Context -TagName "Parsec" -TagValue $parsec
         $power = ConvertTo-CdfPower -Context $Context
         $powerTag = Get-TagString -Context $Context -TagName "Power" -TagValue $power
+        $politics = ConvertTo-CdfPolitics -Context $Context
+        $politicsTag = Get-TagString -Context $Context -TagName "Politics" -TagValue $politics
         $rarity = ConvertTo-CdfRarity -Context $Context
         $set = ConvertTo-CdfSet -Context $Context
         $setTag = Get-TagString -Context $Context -TagName "Set" -TagValue $set
@@ -429,13 +431,13 @@ function ConvertTo-CdfLine {
                 $line3 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
                 $line4 = "{0}" -f $gametextTag
 
-                "card `"$image`" `"{0}{1}{2}\n{3}\n{4}`"" -f $line0, $line1, $line2, $line3, $line4
+                "card `"$image`" `"{0}{1}{2}{3}{4}`"" -f $line0, $line1, $line2, $line3, $line4
             }
             "Character" {
                 $line0 = "{0} ({1})\n" -f $title, $destiny
                 $line1 = "{0} {1} - {2} [{3}]\n" -f $side, $type, $subType, $rarity
                 $line2 = "{0}\n" -f $setTag
-                $line3 = @($powerTag, $abilityTag, $armorTag, $extraText) | ConcatChunks
+                $line3 = @($powerTag, $abilityTag, $armorTag, $politicsTag, $extraText) | ConcatChunks
                 $line4 = "{0} {1}\n" -f $deployTag, $forfeitTag
                 $line5 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
                 $line6 = "{0}\n" -f $loreTag
@@ -445,14 +447,88 @@ function ConvertTo-CdfLine {
             }
             "Creature" {
                 switch ($id) {
-                    2821 {
-                        # Womp Rat
-                        $defenseTag = Get-TagString -Context $Context -TagName "SCURRY" -TagValue "4"
+                    #region Creature Defense Values
+                    296 {
+                        # Bog Wing
+                        $defenseTag = Get-TagString -Context $Context -TagName "FLIGHT" -TagValue "2"
                     }
                     339 {
                         # Bubo
                         $defenseTag = Get-TagString -Context $Context -TagName "BARK" -TagValue "5"
                     }
+                    729 {
+                        # Dionaga
+                        $defenseTag = Get-TagString -Context $Context -TagName "SLITHER" -TagValue "5"
+                    }
+                    6254 {
+                        # Dionaga (V)
+                        $defenseTag = Get-TagString -Context $Context -TagName "TENTACLES" -TagValue "4"
+                    }
+                    771 {
+                        # Dragonsnake
+                        $defenseTag = Get-TagString -Context $Context -TagName "HUMP" -TagValue "2"
+                    }
+                    1452 {
+                        # Krayt Dragon
+                        $defenseTag = Get-TagString -Context $Context -TagName "MOURNFUL HOWL" -TagValue "5"
+                    }
+                    1718 {
+                        # Mynock
+                        $defenseTag = Get-TagString -Context $Context -TagName "SWARM" -TagValue "3"
+                    }
+                    1837 {
+                        # One-Arm
+                        $defenseTag = Get-TagString -Context $Context -TagName "VISCIOUS HOWL" -TagValue "4"
+                    }
+                    6557 {
+                        # One-Arm (V)
+                        $defenseTag = Get-TagString -Context $Context -TagName "VISCIOUS HOWL" -TagValue "4"
+                    }
+                    2021 {
+                        # Rancor
+                        $defenseTag = Get-TagString -Context $Context -TagName "ARMORED HIDE" -TagValue "5"
+                    }
+                    2116 {
+                        # Rock Wart
+                        $defenseTag = Get-TagString -Context $Context -TagName "CARAPACE" -TagValue "2"
+                    }
+                    2172 {
+                        # Sarlacc
+                        $defenseTag = Get-TagString -Context $Context -TagName "TENTACLES" -TagValue "12"
+                    }
+                    6615 {
+                        # Sarlacc (V)
+                        $defenseTag = Get-TagString -Context $Context -TagName "TENTACLES" -TagValue "12"
+                    }
+                    2281 {
+                        # Sleen
+                        $defenseTag = Get-TagString -Context $Context -TagName "CLAWS" -TagValue "2"
+                    }
+                    2312 {
+                        # Space Slug
+                        $defenseTag = Get-TagString -Context $Context -TagName "HIDE" -TagValue "3"
+                    }
+                    6702 {
+                        # Thrawn's Ysalamir
+                        $defenseTag = Get-TagString -Context $Context -TagName "FANGS" -TagValue "4"
+                    }
+                    2717 {
+                        # Vine Snake
+                        $defenseTag = Get-TagString -Context $Context -TagName "SLITHER" -TagValue "3"
+                    }
+                    2737 {
+                        # Wampa
+                        $defenseTag = Get-TagString -Context $Context -TagName "VICIOUS HOWL" -TagValue "3"
+                    }
+                    6744 {
+                        # Wampa (V)
+                        $defenseTag = Get-TagString -Context $Context -TagName "VICIOUS HOWL" -TagValue "4"
+                    }
+                    2821 {
+                        # Womp Rat
+                        $defenseTag = Get-TagString -Context $Context -TagName "SCURRY" -TagValue "4"
+                    }
+                    #endregion Creature Defense Values
                     default {
                         $defenseTag = Get-TagString -Context $Context -TagName "UNKNOWN" -TagValue "0"
                     }
@@ -461,7 +537,8 @@ function ConvertTo-CdfLine {
                 $line0 = "{0} ({1})\n" -f $title, $destiny
                 $line1 = "{0} {1} - {2} [{3}]\n" -f $side, $type, $subType, $rarity
                 $line2 = "{0}\n" -f $setTag
-                $line3 = @($powerTag, $defenseTag, $extraText) | ConcatChunks
+                # $line3 = @($powerTag, $defenseTag, $extraText) | ConcatChunks
+                $line3 = @($powerTag, $extraText) | ConcatChunks
                 $line4 = "{0} {1}\n" -f $deployTag, $forfeitTag
                 $line5 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
                 $line6 = "{0}\n" -f $loreTag
@@ -586,21 +663,14 @@ function ConvertTo-CdfLine {
                 "card `"$image`" `"{0}{1}{2}\n{3}\n{4}`"" -f $line0, $line1, $line2, $line3, $line4
             }
             "Location" {
-                switch ($subType) {
-                    "System" {
-                        $line0 = "{0} ({1})\n" -f $title, $destiny
-                        $line1 = "{0} {1} - {2} [{3}]\n" -f $side, $type, $subType, $rarity
-                        $line2 = "{0}\n" -f $setTag
-                        $line3 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
-                        $line4 = if ($parsecTag -ne "") { "{0}\n" -f $parsecTag } else { "" }
-                        $line5 = "{0}" -f $gametextTag.Replace("Dark:  ", "DARK ($darkSideIcons): ").Replace("Light:  ", "LIGHT ($lightSideIcons): ").Replace("Text: DARK (", "Text:\nDARK (").Replace("Text: LIGHT (", "Text:\nLIGHT (").Replace(".  DARK (", ".\n\nDARK (").Replace(".  LIGHT (", ".\n\nLIGHT (")
+                $line0 = "{0} ({1})\n" -f $title, $destiny
+                $line1 = "{0} {1} - {2} [{3}]\n" -f $side, $type, $subType, $rarity
+                $line2 = "{0}\n" -f $setTag
+                $line3 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
+                $line4 = if ($parsecTag -ne "") { "{0}\n" -f $parsecTag } else { "" }
+                $line5 = "{0}" -f $gametextTag.Replace("Dark:  ", "DARK ($darkSideIcons): ").Replace("Light:  ", "LIGHT ($lightSideIcons): ").Replace("Text: DARK (", "Text:\nDARK (").Replace("Text: LIGHT (", "Text:\nLIGHT (").Replace(".  DARK (", ".\n\nDARK (").Replace(".  LIGHT (", ".\n\nLIGHT (")
 
-                        "card `"$image`" `"{0}{1}{2}{3}{4}\n{5}`"" -f $line0, $line1, $line2, $line3, $line4, $line5
-                    }
-                    default {
-                        "card `"$image`" `"TODO`""
-                    }
-                }
+                "card `"$image`" `"{0}{1}{2}{3}{4}\n{5}`"" -f $line0, $line1, $line2, $line3, $line4, $line5
             }
             "Mission" {
                 $line0 = "{0} ({1})\n" -f $title, $destiny
@@ -653,12 +723,11 @@ function ConvertTo-CdfLine {
                 $line0 = "{0} ({1})\n" -f $title, $destiny
                 $line1 = "{0} {1} - {2} [{3}]\n" -f $side, $type, $subType, $rarity
                 $line2 = "{0}\n" -f $setTag
-                $line3 = "{0} {1}\n" -f $deployTag, $forfeitTag
-                $line4 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
-                $line5 = "{0}\n" -f $loreTag
-                $line6 = "{0}" -f $gametextTag
+                $line3 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
+                $line4 = "{0}\n" -f $loreTag
+                $line5 = "{0}" -f $gametextTag
 
-                "card `"$image`" `"{0}{1}{2}{3}{4}\n{5}\n{6}`"" -f $line0, $line1, $line2, $line3, $line4, $line5, $line6
+                "card `"$image`" `"{0}{1}{2}{3}\n{4}\n{5}`"" -f $line0, $line1, $line2, $line3, $line4, $line5
             }
             default {
                 Write-Warning "Type = $type, Title = $title, Error = Card type not supported."
@@ -671,7 +740,7 @@ function ConvertTo-CdfLine {
     }
 
     #shims
-    $output = $output.Replace('Text: \n', 'Text:\n').Replace('.  \n', '.\n\n').Replace('. \n', '.\n').Replace('! \n', '!\n')
+    $output = $output.Replace('Text: \n', 'Text:\n').Replace('.)  \n', '.)\n\n').Replace('.  \n', '.\n\n').Replace('. \n', '.\n').Replace('! \n', '!\n')
 
     Write-Debug $output
     Write-Output $output
@@ -772,6 +841,26 @@ function ConvertTo-CdfParsec {
     }
     catch {
         Write-Debug "`tFailed to find or parse Parsec."
+    }
+
+    Write-Output $output
+}
+
+function ConvertTo-CdfPolitics {
+    [CmdletBinding()]
+    param(
+        [Parameter(ValueFromPipeline = $true)]
+        [PSCustomObject]
+        $Context
+    )
+
+    [string]$output = "";
+
+    try {
+        $output = $Context.front.politics
+    }
+    catch {
+        Write-Debug "`tFailed to find or parse politics."
     }
 
     Write-Output $output
@@ -912,7 +1001,7 @@ function ConvertTo-CdfTitle {
     [string]$output = "";
 
     try {
-        $output = $Context.front.title.Replace("<>", "")
+        $output = $Context.front.title #.Replace("<>", "")
     }
     catch {
         Write-Debug "`tFailed to find or parse Title."
@@ -1001,7 +1090,8 @@ function SortAndSave () {
     if (Test-Path -Path $CdfInputPath) {
         Get-Content -Path $CdfInputPath |
         Where-Object {
-            ($_.StartsWith("card"))
+            # ($_.StartsWith("card"))
+            ($_.StartsWith("card `"/starwars"))
         } |
         Sort-Object |
         Add-Content -Path $CdfOutputPath

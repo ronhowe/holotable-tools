@@ -7,7 +7,7 @@ Import-Module -Name "./HolotableTools.psm1" -Force
 ConvertTo-Cdf -JsonPath "~/source/repos/swccg-card-json/Dark.json" -CdfPath "~/source/repos/holotable-tools/Dark.cdf" #-Debug -Verbose
 # ConvertTo-Cdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "~/source/repos/holotable-tools/Light.cdf" #-Debug -Verbose
 
-# ConvertTo-Cdf -JsonPath "~/source/repos/swccg-card-json/Dark.json" -CdfPath "~/source/repos/holotable-tools/Dark.cdf" -IdFilter 3 #-Debug -Verbose
+# ConvertTo-Cdf -JsonPath "~/source/repos/swccg-card-json/Dark.json" -CdfPath "~/source/repos/holotable-tools/Dark.cdf" -IdFilter 312 #-Debug -Verbose
 # ConvertTo-Cdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "~/source/repos/holotable-tools/Light.cdf" -IdFilter 5300  #-Debug -Verbose
 
 # ConvertTo-Cdf -JsonPath "~/source/repos/swccg-card-json/Dark.json" -CdfPath "~/source/repos/holotable-tools/Dark.cdf" -SetFilter "*Dagobah*"
