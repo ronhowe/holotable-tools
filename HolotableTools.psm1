@@ -91,7 +91,13 @@ function ConvertTo-CdfDestiny {
     [string]$output = "";
 
     try {
-        $output = $Context.front.destiny
+
+        if ($Context.back.destiny) {
+            $output = "{0}/{1}" -f $Context.front.destiny, $Context.back.destiny
+        }
+        else {
+            $output = $Context.front.destiny
+        }
     }
     catch {
         Write-Debug "`tFailed to find or parse destiny."
@@ -222,7 +228,14 @@ function ConvertTo-CdfImage {
 
     [string]$output = "";
 
-    $output = $Context.front.imageUrl.Replace("https://res.starwarsccg.org/cards/Images-HT", "").Replace("cards/", "").Replace("large/", "t_").Replace(".gif?raw=true", "")
+    if ($Context.back.imageUrl) {
+        $front = $Context.front.imageUrl.Replace("https://res.starwarsccg.org/cards/Images-HT", "").Replace("cards/", "").Replace("large/", "t_").Replace(".gif?raw=true", "")
+        $back = $(Split-Path -Path $Context.back.imageUrl -Leaf).Replace(".gif?raw=true", "")
+        $output = "/TWOSIDED{0}/{1}" -f $front, $back
+    }
+    else {
+        $output = $Context.front.imageUrl.Replace("https://res.starwarsccg.org/cards/Images-HT", "").Replace("cards/", "").Replace("large/", "t_").Replace(".gif?raw=true", "")
+    }
 
     Write-Output $output
 }
@@ -473,7 +486,13 @@ function ConvertTo-CdfLine {
                 "card `"$image`" `"{0}{1}{2}{3}\n{4}\n{5}`"" -f $line0, $line1, $line2, $line3, $line4, $line5
             }
             "Objective" {
-                "card `"/TWOSIDED$image`" `"$title (0/7)\n$side $type [$rarity]\n$setTag $iconsTag\n{TODO: EDIT GAME TEXT}$gametext`""
+                $line0 = "{0} ({1})\n" -f $title, $destiny
+                $line1 = "{0} {1} [{2}]\n" -f $side, $type, $rarity
+                $line2 = "{0}\n" -f $setTag
+                $line3 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
+                $line4 = "{0}" -f $gametext.Replace('{', '\n{')
+
+                "card `"$image`" `"{0}{1}{2}{3}\n{4}`"" -f $line0, $line1, $line2, $line3, $line4
             }
             "Podracer" {
                 $line0 = "{0} ({1})\n" -f $title, $destiny
@@ -525,7 +544,7 @@ function ConvertTo-CdfLine {
         }
     }
     catch {
-        Write-Error "`tFailed to parse context."
+        Write-Warning "`tFailed to parse context."
         Write-Debug $Context
         Write-Debug $_
     }
@@ -533,8 +552,8 @@ function ConvertTo-CdfLine {
     # Add various shims and hacks.
     $output = $output.Replace('Text: \n', 'Text:\n').Replace('.)  \n', '.)\n\n').Replace('.  \n', '.\n\n').Replace('. \n', '.\n').Replace('! \n', '!\n').Replace('.) \n', '.)\n')
 
-    Write-Output $output
     Write-Debug $output
+    Write-Output $output
 }
 
 function ConvertTo-CdfLightSideIcons {
@@ -716,7 +735,7 @@ function ConvertTo-CdfSet {
     [string]$output = "";
 
     try {
-        $output = $Context.set.Replace("Virtual ", "").Replace("Demo Deck", "Virtual Premium Set")
+        $output = $Context.set.Replace("Virtual Set", "Set").Replace("Demo Deck", "Virtual Premium Set")
     }
     catch {
         Write-Debug "`tFailed to find or parse set."
@@ -999,7 +1018,7 @@ function Export-BasicCdf () {
     if (Test-Path -Path $CdfInputPath) {
         Get-Content -Path $CdfInputPath |
         Where-Object {
-            ($_.StartsWith("card `"/starwars") -or $_.StartsWith("card `"/TWO"))
+            ($_.StartsWith("card"))
         } |
         Sort-Object |
         Add-Content -Path $CdfOutputPath
