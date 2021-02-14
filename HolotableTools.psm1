@@ -1100,7 +1100,7 @@ function SortAndSave () {
         Get-Content -Path $CdfInputPath |
         Where-Object {
             # ($_.StartsWith("card"))
-            ($_.StartsWith("card `"/starwars"))
+            ($_.StartsWith("card `"/starwars") -or $_.StartsWith("card `"/TWO"))
         } |
         Sort-Object |
         Add-Content -Path $CdfOutputPath

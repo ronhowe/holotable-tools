@@ -1,3 +1,4 @@
+#region Click Run
 Clear-Host
 
 Set-Location -Path $(Split-Path -Path $MyInvocation.MyCommand.Path -Parent)
@@ -24,3 +25,4 @@ SortAndSave -CdfInputPath "~/source/repos/holotable-tools/Dark.cdf" -CdfOutputPa
 
 # SortAndSave -CdfInputPath "~/source/repos/holotable-tools/Light.cdf" -CdfOutputPath "~/source/repos/holotable-tools/Light.sorted.cdf"
 # SortAndSave -CdfInputPath "~/source/repos/holotable/lightside.cdf" -CdfOutputPath "~/source/repos/holotable-tools/lightside.sorted.cdf"
+#endregion Click Run
