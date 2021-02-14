@@ -716,7 +716,7 @@ function ConvertTo-CdfSet {
     [string]$output = "";
 
     try {
-        $output = $Context.set.Replace("Virtual ", "")
+        $output = $Context.set.Replace("Virtual ", "").Replace("Demo Deck", "Virtual Premium Set")
     }
     catch {
         Write-Debug "`tFailed to find or parse set."
