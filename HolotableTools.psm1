@@ -356,7 +356,7 @@ function ConvertTo-CdfLine {
                 $line4 = "{0}\n" -f $loreTag
                 $line5 = "{0}" -f $gametextTag
 
-                "card `"$image`" `"{0}{1}{2}\n{3}\n{4}\n{5}`"" -f $line0, $line1, $line2, $line3, $line4, $line5
+                "card `"$image`" `"{0}{1}{2}{3}\n{4}\n{5}`"" -f $line0, $line1, $line2, $line3, $line4, $line5
             }
             "Device" {
                 $line0 = "{0} ({1})\n" -f $title, $destiny
