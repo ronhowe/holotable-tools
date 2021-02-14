@@ -270,7 +270,7 @@ function ConvertTo-CdfLine {
     [string]$output = "";
 
     $id = $Context.id
-    Write-Verbose "Parsing $id..."
+    Write-Verbose "Parsing id = $id..."
 
     try {
         $ability = ConvertTo-CdfAbility -Context $Context
@@ -971,10 +971,7 @@ function Export-Cdf {
     ConvertFrom-Json |
     Select-Object -ExpandProperty "cards" |
     Where-Object {
-        if ($PSCmdlet.ParameterSetName -eq "NoFilter") {
-            $true
-        }
-        elseif ($PSCmdlet.ParameterSetName -eq "IdFilter") {
+        if ($PSCmdlet.ParameterSetName -eq "IdFilter") {
             $_.id -eq $IdFilter
         }
         elseif ($PSCmdlet.ParameterSetName -eq "SetFilter") {
@@ -986,7 +983,11 @@ function Export-Cdf {
         elseif ($PSCmdlet.ParameterSetName -eq "TypeFilter") {
             $_.front.type -like $TypeFilter
         }
+        else {
+            $true
+        }
     } |
+    Sort-Object -Property "id" |
     Select-Object -Property @{Name = "Image"; Expression = { ConvertTo-CdfImage -Context $_ } }, @{Name = "Section"; Expression = { ConvertTo-CdfSection -Context $_ } }, @{Name = "SortTitle"; Expression = { ConvertTo-CdfTitleSort -Context $_ } }, @{Name = "Line"; Expression = { ConvertTo-CdfLine -Context $_ } } |
     Sort-Object -Property "Section", "SortTitle", "Image", "Line" |
     ForEach-Object {
@@ -1008,7 +1009,11 @@ function Export-BasicCdf () {
 
         [Parameter()]
         [string]
-        $CdfOutputPath
+        $CdfOutputPath,
+
+        [Parameter()]
+        [switch]
+        $ExcludeLegacy = $false
     )
 
     if (Test-Path -Path $CdfOutputPath) {
@@ -1018,7 +1023,9 @@ function Export-BasicCdf () {
     if (Test-Path -Path $CdfInputPath) {
         Get-Content -Path $CdfInputPath |
         Where-Object {
-            ($_.StartsWith("card"))
+            ($_.StartsWith("card `"/starwars")) -or
+            ($_.StartsWith("card `"/TWOSIDED")) -or
+            $($_.StartsWith("card `"/legacy") -and -not $ExcludeLegacy)
         } |
         Sort-Object |
         Add-Content -Path $CdfOutputPath
