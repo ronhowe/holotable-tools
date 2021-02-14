@@ -490,7 +490,9 @@ function ConvertTo-CdfLine {
                 $line1 = "{0} {1} [{2}]\n" -f $side, $type, $rarity
                 $line2 = "{0}\n" -f $setTag
                 $line3 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
-                $line4 = "{0}" -f $gametext.Replace('{', '\n{')
+                $frontTitle = $title.Split('/').Trim()[0]
+                $backTitle = $title.Split('/').Trim()[1].Replace(' (V)', '')
+                $line4 = "{0}" -f $gametext.Replace("$frontTitle`:", "$frontTitle`:\n\n").Replace($backTitle, "\n\n$backTitle").Replace('. {', '.{').Replace('{', '\n{')
 
                 "card `"$image`" `"{0}{1}{2}{3}\n{4}`"" -f $line0, $line1, $line2, $line3, $line4
             }
