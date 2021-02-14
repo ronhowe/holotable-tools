@@ -376,7 +376,7 @@ function ConvertTo-CdfLine {
                 $line3 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
                 $line4 = "{0}" -f $gametextTag
 
-                "card `"$image`" `"{0}{1}{2}\n{3}\n{4}`"" -f $line0, $line1, $line2, $line3, $line4
+                "card `"$image`" `"{0}{1}{2}{3}\n{4}`"" -f $line0, $line1, $line2, $line3, $line4
             }
             "Game Aid" {
                 $line0 = "{0} ({1})\n" -f $title, $destiny
