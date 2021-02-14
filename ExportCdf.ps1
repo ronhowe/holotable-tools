@@ -2,7 +2,7 @@
 
 Clear-Host
 
-Set-Location -Path $(Split-Path -Path $MyInvocation.MyCommand.Path -Parent)
+Push-Location -Path $(Split-Path -Path $MyInvocation.MyCommand.Path -Parent)
 
 Import-Module -Name "./HolotableTools.psm1" -Force
 
@@ -32,3 +32,5 @@ Export-BasicCdf -CdfInputPath "~/source/repos/holotable-tools/Dark.cdf" -CdfOutp
 # Export-BasicCdf -CdfInputPath "~/source/repos/holotable/lightside.cdf" -CdfOutputPath "~/source/repos/holotable-tools/lightside.basic.cdf"
 
 #endregion Hit F5
+
+Pop-Location
