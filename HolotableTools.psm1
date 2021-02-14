@@ -530,7 +530,7 @@ function ConvertTo-CdfLine {
     }
 
     # Add various shims and hacks.
-    $output = $output.Replace('Text: \n', 'Text:\n').Replace('.)  \n', '.)\n\n').Replace('.  \n', '.\n\n').Replace('. \n', '.\n').Replace('! \n', '!\n')
+    $output = $output.Replace('Text: \n', 'Text:\n').Replace('.)  \n', '.)\n\n').Replace('.  \n', '.\n\n').Replace('. \n', '.\n').Replace('! \n', '!\n').Replace('.) \n', '.)\n')
 
     Write-Output $output
     Write-Debug $output
