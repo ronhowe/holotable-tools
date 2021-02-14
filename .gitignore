@@ -348,7 +348,9 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
-Dark.sorted.cdf
-Light.sorted.cdf
-darkside.sorted.cdf
-lightside.sorted.cdf
+darkside.basic.cdf
+Dark.cdf
+Dark.basic.cdf
+lightside.basic.cdf
+Light.cdf
+Light.basic.cdf

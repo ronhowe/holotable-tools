@@ -1,130 +1,4 @@
-function ConvertTo-Cdf {
-    <#
-    .SYNOPSIS
-    This script attempts to parse a JSON file in the swccg-card-json repo to the approximate format of a Holotable CDF file.
-
-    .DESCRIPTION
-    This script attempts to parse a JSON file in the swccg-card-json repo to the approximate format of a Holotable CDF file.
-
-    The resulting output is sorted by card type, subtype and title.
-
-    .PARAMETER JsonPath
-    The path to the input JSON file.
-
-    .PARAMETER CdfPath
-    The path to the output CDF file.
-
-    .PARAMETER Id
-    The id to parse.  Valid values can be found in the input JSFON file "id" properties.
-
-    .PARAMETER Set
-    The set to parse.  Valid values can be found in the input JSFON file "set" properties.
-
-    .EXAMPLE
-    PS> ./ConvertTo-Cdf.ps1 -JsonPath "./Dark.json" -CdfPath "./Dark.cdf" -Set "Virtual Set 13" -Verbose
-
-    .EXAMPLE
-    PS> ./ConvertTo-Cdf.ps1 -JsonPath "./Light.json" -CdfPath "./Light.cdf" -Id 5300 -Verbose
-#>
-    [CmdletBinding(DefaultParameterSetName = "NoFilter")]
-    param(
-        [Parameter(Mandatory = $true, ParameterSetName = "NoFilter")]
-        [Parameter(Mandatory = $true, ParameterSetName = "IdFilter")]
-        [Parameter(Mandatory = $true, ParameterSetName = "SetFilter")]
-        [Parameter(Mandatory = $true, ParameterSetName = "TitleFilter")]
-        [Parameter(Mandatory = $true, ParameterSetName = "TypeFilter")]
-        [ValidateNotNullOrEmpty()]
-        [string]
-        $JsonPath,
-
-        [Parameter(Mandatory = $true, ParameterSetName = "NoFilter")]
-        [Parameter(Mandatory = $true, ParameterSetName = "IdFilter")]
-        [Parameter(Mandatory = $true, ParameterSetName = "SetFilter")]
-        [Parameter(Mandatory = $true, ParameterSetName = "TitleFilter")]
-        [Parameter(Mandatory = $true, ParameterSetName = "TypeFilter")]
-        [ValidateNotNullOrEmpty()]
-        [string]
-        $CdfPath,
-
-        [Parameter(Mandatory = $true, ParameterSetName = "IdFilter")]
-        [ValidateNotNull()]
-        [int]
-        $IdFilter,
-
-        [Parameter(Mandatory = $true, ParameterSetName = "SetFilter")]
-        [ValidateNotNullOrEmpty()]
-        [string]
-        $SetFilter,
-
-        [Parameter(Mandatory = $true, ParameterSetName = "TitleFilter")]
-        [ValidateNotNullOrEmpty()]
-        [string]
-        $TitleFilter,
-
-        [Parameter(Mandatory = $true, ParameterSetName = "TypeFilter")]
-        [ValidateNotNullOrEmpty()]
-        [string]
-        $TypeFilter
-    )
-
-    if (-not (Test-Path -Path $JsonPath)) {
-        Write-Error "Cannot find $JsonPath." -ErrorAction Stop
-    }
-
-    if (Test-Path -Path $CdfPath) {
-        Remove-Item -Path $CdfPath
-    }
-
-    #region header version
-    "version {0}" -f $(Get-Date -Format "yyyyMMdd") | Add-Content -Path $CdfPath
-    #endregion header version
-    
-    #region header gif
-    if ($CdfPath.EndsWith("Dark.cdf")) {
-        "back imp.gif" | Add-Content -Path $CdfPath
-    }
-    elseif ($CdfPath.EndsWith("Light.cdf")) {
-        "back reb.gif" | Add-Content -Path $CdfPath
-    }
-    else {
-        "back placeholder.gif" | Add-Content -Path $CdfPath
-    }
-    #endregion header gif
-
-    [string]$PreviousSection = ""
-
-    Get-Content -Path $JsonPath |
-    ConvertFrom-Json |
-    Select-Object -ExpandProperty "cards" |
-    Where-Object {
-        if ($PSCmdlet.ParameterSetName -eq "NoFilter") {
-            $true
-            # $_.legacy -eq $false
-        }
-        elseif ($PSCmdlet.ParameterSetName -eq "IdFilter") {
-            $_.id -eq $IdFilter
-        }
-        elseif ($PSCmdlet.ParameterSetName -eq "SetFilter") {
-            $_.set -like $SetFilter
-        }
-        elseif ($PSCmdlet.ParameterSetName -eq "TitleFilter") {
-            $_.front.title -like $TitleFilter
-        }
-        elseif ($PSCmdlet.ParameterSetName -eq "TypeFilter") {
-            $_.front.type -like $TypeFilter
-        }
-    } |
-    Select-Object -Property @{Name = "Image"; Expression = { ConvertTo-CdfImage -Context $_ } }, @{Name = "Section"; Expression = { ConvertTo-CdfSection -Context $_ } }, @{Name = "SortTitle"; Expression = { ConvertTo-CdfTitleSort -Context $_ } }, @{Name = "Line"; Expression = { ConvertTo-CdfLine -Context $_ } } |
-    Sort-Object -Property "Section", "SortTitle", "Image", "Line" |
-    ForEach-Object {
-        if ($PreviousSection -ne $_.Section) {
-            Write-Output $("`r`n`{0}`r`n" -f $_.Section)
-        }
-        $PreviousSection = $_.Section
-        Write-Output $_.Line
-    } |
-    Add-Content -Path $CdfPath
-}
+#region Convert Functions
 
 function ConvertTo-CdfAbility {
     [CmdletBinding()]
@@ -140,7 +14,7 @@ function ConvertTo-CdfAbility {
         $output = $Context.front.ability
     }
     catch {
-        Write-Debug "`tFailed to find or parse Ability."
+        Write-Debug "`tFailed to find or parse ability."
     }
 
     Write-Output $output
@@ -160,7 +34,27 @@ function ConvertTo-CdfArmor {
         $output = $Context.front.armor
     }
     catch {
-        Write-Debug "`tFailed to find or parse Armor."
+        Write-Debug "`tFailed to find or parse armor."
+    }
+
+    Write-Output $output
+}
+
+function ConvertTo-CdfDarkSideIcons {
+    [CmdletBinding()]
+    param(
+        [Parameter(ValueFromPipeline = $true)]
+        [PSCustomObject]
+        $Context
+    )
+
+    [string]$output = "";
+
+    try {
+        $output = $Context.front.darkSideIcons
+    }
+    catch {
+        Write-Debug "`tFailed to find or parse darkSideIcons."
     }
 
     Write-Output $output
@@ -180,7 +74,7 @@ function ConvertTo-CdfDeploy {
         $output = $Context.front.deploy
     }
     catch {
-        Write-Debug "`tFailed to find or parse Deploy."
+        Write-Debug "`tFailed to find or parse deploy."
     }
 
     Write-Output $output
@@ -200,7 +94,7 @@ function ConvertTo-CdfDestiny {
         $output = $Context.front.destiny
     }
     catch {
-        Write-Debug "`tFailed to find or parse Destiny."
+        Write-Debug "`tFailed to find or parse destiny."
     }
 
     Write-Output $output
@@ -220,7 +114,7 @@ function ConvertTo-CdfExtraText {
         $output = $Context.front.extraText
     }
     catch {
-        Write-Debug "`tFailed to find or parse ExtraText."
+        Write-Debug "`tFailed to find or parse extraText."
     }
 
     Write-Output $output
@@ -248,7 +142,7 @@ function ConvertTo-CdfForfeit {
         }
     }
     catch {
-        Write-Debug "`tFailed to find or parse Forfeit."
+        Write-Debug "`tFailed to find or parse forfeit."
     }
 
     Write-Output $output
@@ -279,7 +173,7 @@ function ConvertTo-CdfGameText {
         }
     }
     catch {
-        Write-Debug "`tFailed to find or parse GameText."
+        Write-Debug "`tFailed to find or parse gametext."
     }
 
     Write-Output $output
@@ -299,7 +193,7 @@ function ConvertTo-CdfHypderspeed {
         $output = $Context.front.hyperspeed
     }
     catch {
-        Write-Debug "`tFailed to find or parse Hypderspeed."
+        Write-Debug "`tFailed to find or parse hyperspeed."
     }
 
     Write-Output $output
@@ -347,29 +241,8 @@ function ConvertTo-CdfLandspeed {
         $output = $Context.front.landspeed
     }
     catch {
-        Write-Debug "`tFailed to find or parse Landspeed."
+        Write-Debug "`tFailed to find or parse landspeed."
     }
-
-    Write-Output $output
-}
-
-function Get-TagString {
-    param(
-        [Parameter(ValueFromPipeline = $true)]
-        [PSCustomObject]
-        $Context,
-
-        [string]
-        $TagName,
-        [string]
-        $TagValue
-    )
-
-    [string]$output = ""
-
-    if ($TagValue -ne "") { $output = "{0}: {1}" -f $TagName, $TagValue }
-
-    $output = $output.Trim()
 
     Write-Output $output
 }
@@ -388,47 +261,44 @@ function ConvertTo-CdfLine {
 
     try {
         $ability = ConvertTo-CdfAbility -Context $Context
-        $abilityTag = Get-TagString -Context $Context -TagName "Ability" -TagValue $ability
+        $abilityTag = Format-CdfTagPrefix -Context $Context -TagName "Ability" -TagValue $ability
         $armor = ConvertTo-CdfArmor -Context $Context
-        $armorTag = Get-TagString -Context $Context -TagName "Armor" -TagValue $armor
+        $armorTag = Format-CdfTagPrefix -Context $Context -TagName "Armor" -TagValue $armor
         $darkSideIcons = ConvertTo-CdfDarkSideIcons -Context $Context
         $deploy = ConvertTo-CdfDeploy -Context $Context
-        $deployTag = Get-TagString -Context $Context -TagName "Deploy" -TagValue $deploy
+        $deployTag = Format-CdfTagPrefix -Context $Context -TagName "Deploy" -TagValue $deploy
         $destiny = ConvertTo-CdfDestiny -Context $Context
         $extraText = ConvertTo-CdfExtraText -Context $Context
         $forfeit = ConvertTo-CdfForfeit -Context $Context
-        $forfeitTag = Get-TagString -Context $Context -TagName "Forfeit" -TagValue $forfeit
+        $forfeitTag = Format-CdfTagPrefix -Context $Context -TagName "Forfeit" -TagValue $forfeit
         $gametext = ConvertTo-CdfGameText -Context $Context
+        $gametextTag = Format-CdfTagPrefix -Context $Context -TagName "Text" -TagValue $gametext
         $hyperspeed = ConvertTo-CdfHypderspeed -Context $Context
-        $hyperspeedTag = Get-TagString -Context $Context -TagName "Hyperspeed" -TagValue $hyperspeed
+        $hyperspeedTag = Format-CdfTagPrefix -Context $Context -TagName "Hyperspeed" -TagValue $hyperspeed
         $icons = ConvertTo-CdfIcons -Context $Context
-        $iconsTag = Get-TagString -Context $Context -TagName "Icons" -TagValue $icons
+        $iconsTag = Format-CdfTagPrefix -Context $Context -TagName "Icons" -TagValue $icons
         $image = ConvertTo-CdfImage -Context $Context
         $landspeed = ConvertTo-CdfLandspeed -Context $Context
-        $landspeedTag = Get-TagString -Context $Context -TagName "Landspeed" -TagValue $landspeed
+        $landspeedTag = Format-CdfTagPrefix -Context $Context -TagName "Landspeed" -TagValue $landspeed
         $lightSideIcons = ConvertTo-CdfLightSideIcons -Context $Context
         $lore = ConvertTo-CdfLore -Context $Context
-        $loreTag = Get-TagString -Context $Context -TagName "Lore" -TagValue $lore
+        $loreTag = Format-CdfTagPrefix -Context $Context -TagName "Lore" -TagValue $lore
         $maneuver = ConvertTo-CdfManeuver -Context $Context
-        $maneuverTag = Get-TagString -Context $Context -TagName "Maneuver" -TagValue $maneuver
+        $maneuverTag = Format-CdfTagPrefix -Context $Context -TagName "Maneuver" -TagValue $maneuver
         $parsec = ConvertTo-CdfParsec -Context $Context
-        $parsecTag = Get-TagString -Context $Context -TagName "Parsec" -TagValue $parsec
-        $power = ConvertTo-CdfPower -Context $Context
-        $powerTag = Get-TagString -Context $Context -TagName "Power" -TagValue $power
+        $parsecTag = Format-CdfTagPrefix -Context $Context -TagName "Parsec" -TagValue $parsec
         $politics = ConvertTo-CdfPolitics -Context $Context
-        $politicsTag = Get-TagString -Context $Context -TagName "Politics" -TagValue $politics
+        $politicsTag = Format-CdfTagPrefix -Context $Context -TagName "Politics" -TagValue $politics
+        $power = ConvertTo-CdfPower -Context $Context
+        $powerTag = Format-CdfTagPrefix -Context $Context -TagName "Power" -TagValue $power
         $rarity = ConvertTo-CdfRarity -Context $Context
         $set = ConvertTo-CdfSet -Context $Context
-        $setTag = Get-TagString -Context $Context -TagName "Set" -TagValue $set
+        $setTag = Format-CdfTagPrefix -Context $Context -TagName "Set" -TagValue $set
         $side = ConvertTo-CdfSide -Context $Context
         $subType = ConvertTo-CdfSubType -Context $Context
-        $gametextTag = Get-TagString -Context $Context -TagName "Text" -TagValue $gametext
         $title = ConvertTo-CdfTitle -Context $Context
         $type = ConvertTo-CdfType -Context $Context
         # $uniqueness = ConvertTo-CdfUniqueness -Context $Context
-
-        # $defenseValueTag = "{0}{1}{2}" -f $abilityTag, $armorTag, $maneuverTag
-        # $speedTag = "{0}{1}" -f $hyperspeedTag, $landspeedTag
 
         $output =
         switch ($type) {
@@ -436,7 +306,6 @@ function ConvertTo-CdfLine {
                 $line0 = "{0} ({1})\n" -f $title, $destiny
                 $line1 = "{0} {1} [{2}]\n" -f $side, $type, $rarity
                 $line2 = "{0}\n" -f $setTag
-                # $line3 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
                 $line3 = "{0}\n" -f $iconsTag
                 $line4 = "{0}" -f $gametextTag
 
@@ -446,7 +315,7 @@ function ConvertTo-CdfLine {
                 $line0 = "{0} ({1})\n" -f $title, $destiny
                 $line1 = "{0} {1} - {2} [{3}]\n" -f $side, $type, $subType, $rarity
                 $line2 = "{0}\n" -f $setTag
-                $line3 = @($powerTag, $abilityTag, $armorTag, $maneuverTag, $politicsTag, $extraText) | ConcatChunks
+                $line3 = @($powerTag, $abilityTag, $armorTag, $maneuverTag, $politicsTag, $extraText) | Format-CdfTagGroup
                 $line4 = "{0} {1}\n" -f $deployTag, $forfeitTag
                 $line5 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
                 $line6 = "{0}\n" -f $loreTag
@@ -455,99 +324,10 @@ function ConvertTo-CdfLine {
                 "card `"$image`" `"{0}{1}{2}{3}{4}{5}\n{6}\n{7}`"" -f $line0, $line1, $line2, $line3, $line4, $line5, $line6, $line7
             }
             "Creature" {
-                switch ($id) {
-                    #region Creature Defense Values
-                    296 {
-                        # Bog Wing
-                        $defenseTag = Get-TagString -Context $Context -TagName "FLIGHT" -TagValue "2"
-                    }
-                    339 {
-                        # Bubo
-                        $defenseTag = Get-TagString -Context $Context -TagName "BARK" -TagValue "5"
-                    }
-                    729 {
-                        # Dionaga
-                        $defenseTag = Get-TagString -Context $Context -TagName "SLITHER" -TagValue "5"
-                    }
-                    6254 {
-                        # Dionaga (V)
-                        $defenseTag = Get-TagString -Context $Context -TagName "TENTACLES" -TagValue "4"
-                    }
-                    771 {
-                        # Dragonsnake
-                        $defenseTag = Get-TagString -Context $Context -TagName "HUMP" -TagValue "2"
-                    }
-                    1452 {
-                        # Krayt Dragon
-                        $defenseTag = Get-TagString -Context $Context -TagName "MOURNFUL HOWL" -TagValue "5"
-                    }
-                    1718 {
-                        # Mynock
-                        $defenseTag = Get-TagString -Context $Context -TagName "SWARM" -TagValue "3"
-                    }
-                    1837 {
-                        # One-Arm
-                        $defenseTag = Get-TagString -Context $Context -TagName "VISCIOUS HOWL" -TagValue "4"
-                    }
-                    6557 {
-                        # One-Arm (V)
-                        $defenseTag = Get-TagString -Context $Context -TagName "VISCIOUS HOWL" -TagValue "4"
-                    }
-                    2021 {
-                        # Rancor
-                        $defenseTag = Get-TagString -Context $Context -TagName "ARMORED HIDE" -TagValue "5"
-                    }
-                    2116 {
-                        # Rock Wart
-                        $defenseTag = Get-TagString -Context $Context -TagName "CARAPACE" -TagValue "2"
-                    }
-                    2172 {
-                        # Sarlacc
-                        $defenseTag = Get-TagString -Context $Context -TagName "TENTACLES" -TagValue "12"
-                    }
-                    6615 {
-                        # Sarlacc (V)
-                        $defenseTag = Get-TagString -Context $Context -TagName "TENTACLES" -TagValue "12"
-                    }
-                    2281 {
-                        # Sleen
-                        $defenseTag = Get-TagString -Context $Context -TagName "CLAWS" -TagValue "2"
-                    }
-                    2312 {
-                        # Space Slug
-                        $defenseTag = Get-TagString -Context $Context -TagName "HIDE" -TagValue "3"
-                    }
-                    6702 {
-                        # Thrawn's Ysalamir
-                        $defenseTag = Get-TagString -Context $Context -TagName "FANGS" -TagValue "4"
-                    }
-                    2717 {
-                        # Vine Snake
-                        $defenseTag = Get-TagString -Context $Context -TagName "SLITHER" -TagValue "3"
-                    }
-                    2737 {
-                        # Wampa
-                        $defenseTag = Get-TagString -Context $Context -TagName "VICIOUS HOWL" -TagValue "3"
-                    }
-                    6744 {
-                        # Wampa (V)
-                        $defenseTag = Get-TagString -Context $Context -TagName "VICIOUS HOWL" -TagValue "4"
-                    }
-                    2821 {
-                        # Womp Rat
-                        $defenseTag = Get-TagString -Context $Context -TagName "SCURRY" -TagValue "4"
-                    }
-                    #endregion Creature Defense Values
-                    default {
-                        $defenseTag = Get-TagString -Context $Context -TagName "UNKNOWN" -TagValue "0"
-                    }
-                }
-
                 $line0 = "{0} ({1})\n" -f $title, $destiny
                 $line1 = "{0} {1} - {2} [{3}]\n" -f $side, $type, $subType, $rarity
                 $line2 = "{0}\n" -f $setTag
-                # $line3 = @($powerTag, $defenseTag, $extraText) | ConcatChunks
-                $line3 = @($powerTag, $extraText) | ConcatChunks
+                $line3 = @($powerTag, $extraText) | Format-CdfTagGroup
                 $line4 = "{0} {1}\n" -f $deployTag, $forfeitTag
                 $line5 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
                 $line6 = "{0}\n" -f $loreTag
@@ -708,7 +488,7 @@ function ConvertTo-CdfLine {
                 $line0 = "{0} ({1})\n" -f $title, $destiny
                 $line1 = "{0} {1} - {2} [{3}]\n" -f $side, $type, $subType, $rarity
                 $line2 = "{0}\n" -f $setTag
-                $line3 = @($powerTag, $armorTag, $maneuverTag, $hyperspeedTag, $extraText) | ConcatChunks
+                $line3 = @($powerTag, $armorTag, $maneuverTag, $hyperspeedTag, $extraText) | Format-CdfTagGroup
                 $line4 = "{0} {1}\n" -f $deployTag, $forfeitTag
                 $line5 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
                 $line6 = "{0}\n" -f $loreTag
@@ -720,7 +500,7 @@ function ConvertTo-CdfLine {
                 $line0 = "{0} ({1})\n" -f $title, $destiny
                 $line1 = "{0} {1} - {2} [{3}]\n" -f $side, $type, $subType, $rarity
                 $line2 = "{0}\n" -f $setTag
-                $line3 = @($powerTag, $armorTag, $maneuverTag, $landspeedTag, $extraText) | ConcatChunks
+                $line3 = @($powerTag, $armorTag, $maneuverTag, $landspeedTag, $extraText) | Format-CdfTagGroup
                 $line4 = "{0} {1}\n" -f $deployTag, $forfeitTag
                 $line5 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
                 $line6 = "{0}\n" -f $loreTag
@@ -744,35 +524,16 @@ function ConvertTo-CdfLine {
         }
     }
     catch {
-        Write-Error "`tFailed to parse Line."
-        Write-Error $_
+        Write-Error "`tFailed to parse context."
+        Write-Debug $Context
+        Write-Debug $_
     }
 
-    #shims
+    # Add various shims and hacks.
     $output = $output.Replace('Text: \n', 'Text:\n').Replace('.)  \n', '.)\n\n').Replace('.  \n', '.\n\n').Replace('. \n', '.\n').Replace('! \n', '!\n')
 
+    Write-Output $output
     Write-Debug $output
-    Write-Output $output
-}
-
-function ConvertTo-CdfDarkSideIcons {
-    [CmdletBinding()]
-    param(
-        [Parameter(ValueFromPipeline = $true)]
-        [PSCustomObject]
-        $Context
-    )
-
-    [string]$output = "";
-
-    try {
-        $output = $Context.front.darkSideIcons
-    }
-    catch {
-        Write-Debug "`tFailed to find or parse Dark Side Icons."
-    }
-
-    Write-Output $output
 }
 
 function ConvertTo-CdfLightSideIcons {
@@ -789,7 +550,7 @@ function ConvertTo-CdfLightSideIcons {
         $output = $Context.front.lightSideIcons
     }
     catch {
-        Write-Debug "`tFailed to find or parse Light Side Icons."
+        Write-Debug "`tFailed to find or parse lightSideIcons."
     }
 
     Write-Output $output
@@ -809,7 +570,7 @@ function ConvertTo-CdfLore {
         $output = $Context.front.lore
     }
     catch {
-        Write-Debug "`tFailed to find or parse Lore."
+        Write-Debug "`tFailed to find or parse lore."
     }
 
     Write-Output $output
@@ -829,7 +590,7 @@ function ConvertTo-CdfManeuver {
         $output = $Context.front.maneuver
     }
     catch {
-        Write-Debug "`tFailed to find or parse Maneuver."
+        Write-Debug "`tFailed to find or parse maneuver."
     }
 
     Write-Output $output
@@ -849,7 +610,7 @@ function ConvertTo-CdfParsec {
         $output = $Context.front.parsec
     }
     catch {
-        Write-Debug "`tFailed to find or parse Parsec."
+        Write-Debug "`tFailed to find or parse parsec."
     }
 
     Write-Output $output
@@ -889,7 +650,7 @@ function ConvertTo-CdfPower {
         $output = $Context.front.power
     }
     catch {
-        Write-Debug "`tFailed to find or parse Power."
+        Write-Debug "`tFailed to find or parse power."
     }
 
     Write-Output $output
@@ -909,7 +670,7 @@ function ConvertTo-CdfRarity {
         $output = $Context.rarity
     }
     catch {
-        Write-Debug "`tFailed to find or parse Rarity."
+        Write-Debug "`tFailed to find or parse rarity."
     }
 
     Write-Output $output
@@ -933,7 +694,7 @@ function ConvertTo-CdfSection {
         }
     }
     catch {
-        Write-Debug "`tFailed to find or parse Section."
+        Write-Debug "`tFailed to find or parse section."
     }
 
     Write-Output $output
@@ -953,7 +714,7 @@ function ConvertTo-CdfSet {
         $output = $Context.set.Replace("Virtual ", "")
     }
     catch {
-        Write-Debug "`tFailed to find or parse Set."
+        Write-Debug "`tFailed to find or parse set."
     }
 
     Write-Output $output
@@ -973,7 +734,7 @@ function ConvertTo-CdfSide {
         $output = $Context.side
     }
     catch {
-        Write-Debug "`tFailed to find or parse Side."
+        Write-Debug "`tFailed to find or parse side."
     }
 
     Write-Output $output
@@ -993,7 +754,7 @@ function ConvertTo-CdfSubType {
         $output = $Context.front.subType
     }
     catch {
-        Write-Debug "`tFailed to find or parse SubType."
+        Write-Debug "`tFailed to find or parse subType."
     }
 
     Write-Output $output
@@ -1010,10 +771,10 @@ function ConvertTo-CdfTitle {
     [string]$output = "";
 
     try {
-        $output = $Context.front.title #.Replace("<>", "")
+        $output = $Context.front.title
     }
     catch {
-        Write-Debug "`tFailed to find or parse Title."
+        Write-Debug "`tFailed to find or parse title."
     }
 
     Write-Output $output
@@ -1034,7 +795,7 @@ function ConvertTo-CdfTitleSort {
         $output = $Context.front.title.Replace("<>", "").Replace("•", "")
     }
     catch {
-        Write-Debug "`tFailed to find or parse TitleSort."
+        Write-Debug "`tFailed to find or parse titleSort."
     }
 
     Write-Output $output
@@ -1054,7 +815,7 @@ function ConvertTo-CdfType {
         $output = $Context.front.type
     }
     catch {
-        Write-Debug "`tFailed to find or parse Type."
+        Write-Debug "`tFailed to find or parse type."
     }
 
     Write-Output $output
@@ -1074,13 +835,147 @@ function ConvertTo-CdfUniqueness {
         $output = $Context.front.uniqueness
     }
     catch {
-        Write-Debug "`tFailed to find or parse Type."
+        Write-Debug "`tFailed to find or parse uniqueness."
     }
 
     Write-Output $output
 }
 
-function SortAndSave () {
+#endregion Convert Functions
+
+#region Export Functions
+
+function Export-Cdf {
+    <#
+    .SYNOPSIS
+    This script attempts to parse a JSON file in the swccg-card-json repo to the approximate format of a Holotable CDF file.
+
+    .DESCRIPTION
+    This script attempts to parse a JSON file in the swccg-card-json repo to the approximate format of a Holotable CDF file.
+
+    .PARAMETER JsonPath
+    The path to the input JSON file.
+
+    .PARAMETER CdfPath
+    The path to the output CDF file.
+
+    .PARAMETER Id
+    The id to parse.  Valid values can be found in the input JSFON file "id" properties.
+
+    .PARAMETER Set
+    The set to parse.  Valid values can be found in the input JSFON file "set" properties.
+
+    .PARAMETER Title
+    The title to parse.  Valid values can be found in the input JSFON file "title" properties.
+
+    .PARAMETER Type
+    The type to parse.  Valid values can be found in the input JSFON file "type" properties.
+
+    .EXAMPLE
+    PS> ./Export-Cdf.ps1 -JsonPath "./Light.json" -CdfPath "./Light.cdf" -Id 5300
+
+    .EXAMPLE
+    PS> ./Export-Cdf.ps1 -JsonPath "./Dark.json" -CdfPath "./Dark.cdf" -Set "Virtual Set 13"
+
+    .EXAMPLE
+    PS> ./Export-Cdf -JsonPath "./Light.json" -CdfPath "./Light.cdf" -TitleFilter "*Rebel Leadership*"
+
+    .EXAMPLE
+    PS> ./Export-Cdf -JsonPath "./Light.json" -CdfPath "./Light.cdf" -TypeFilter "Admiral*"
+#>
+    [CmdletBinding(DefaultParameterSetName = "NoFilter")]
+    param(
+        [Parameter(Mandatory = $true, ParameterSetName = "NoFilter")]
+        [Parameter(Mandatory = $true, ParameterSetName = "IdFilter")]
+        [Parameter(Mandatory = $true, ParameterSetName = "SetFilter")]
+        [Parameter(Mandatory = $true, ParameterSetName = "TitleFilter")]
+        [Parameter(Mandatory = $true, ParameterSetName = "TypeFilter")]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $JsonPath,
+
+        [Parameter(Mandatory = $true, ParameterSetName = "NoFilter")]
+        [Parameter(Mandatory = $true, ParameterSetName = "IdFilter")]
+        [Parameter(Mandatory = $true, ParameterSetName = "SetFilter")]
+        [Parameter(Mandatory = $true, ParameterSetName = "TitleFilter")]
+        [Parameter(Mandatory = $true, ParameterSetName = "TypeFilter")]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $CdfPath,
+
+        [Parameter(Mandatory = $true, ParameterSetName = "IdFilter")]
+        [ValidateNotNull()]
+        [int]
+        $IdFilter,
+
+        [Parameter(Mandatory = $true, ParameterSetName = "SetFilter")]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $SetFilter,
+
+        [Parameter(Mandatory = $true, ParameterSetName = "TitleFilter")]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $TitleFilter,
+
+        [Parameter(Mandatory = $true, ParameterSetName = "TypeFilter")]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $TypeFilter
+    )
+
+    if (-not (Test-Path -Path $JsonPath)) {
+        Write-Error "Cannot find $JsonPath." -ErrorAction Stop
+    }
+
+    if (Test-Path -Path $CdfPath) {
+        Remove-Item -Path $CdfPath
+    }
+
+    "version {0}" -f $(Get-Date -Format "yyyyMMdd") | Add-Content -Path $CdfPath
+    
+    if ($CdfPath.EndsWith("Dark.cdf")) {
+        "back imp.gif" | Add-Content -Path $CdfPath
+    }
+    elseif ($CdfPath.EndsWith("Light.cdf")) {
+        "back reb.gif" | Add-Content -Path $CdfPath
+    }
+
+    [string]$PreviousSection = ""
+
+    Get-Content -Path $JsonPath |
+    ConvertFrom-Json |
+    Select-Object -ExpandProperty "cards" |
+    Where-Object {
+        if ($PSCmdlet.ParameterSetName -eq "NoFilter") {
+            $true
+        }
+        elseif ($PSCmdlet.ParameterSetName -eq "IdFilter") {
+            $_.id -eq $IdFilter
+        }
+        elseif ($PSCmdlet.ParameterSetName -eq "SetFilter") {
+            $_.set -like $SetFilter
+        }
+        elseif ($PSCmdlet.ParameterSetName -eq "TitleFilter") {
+            $_.front.title -like $TitleFilter
+        }
+        elseif ($PSCmdlet.ParameterSetName -eq "TypeFilter") {
+            $_.front.type -like $TypeFilter
+        }
+    } |
+    Select-Object -Property @{Name = "Image"; Expression = { ConvertTo-CdfImage -Context $_ } }, @{Name = "Section"; Expression = { ConvertTo-CdfSection -Context $_ } }, @{Name = "SortTitle"; Expression = { ConvertTo-CdfTitleSort -Context $_ } }, @{Name = "Line"; Expression = { ConvertTo-CdfLine -Context $_ } } |
+    Sort-Object -Property "Section", "SortTitle", "Image", "Line" |
+    ForEach-Object {
+        if ($PreviousSection -ne $_.Section) {
+            Write-Output $("`r`n`{0}`r`n" -f $_.Section)
+        }
+        $PreviousSection = $_.Section
+        Write-Output $_.Line
+    } |
+    Add-Content -Path $CdfPath
+}
+
+function Export-BasicCdf () {
     [CmdletBinding()]
     param (
         [Parameter()]
@@ -1099,7 +994,6 @@ function SortAndSave () {
     if (Test-Path -Path $CdfInputPath) {
         Get-Content -Path $CdfInputPath |
         Where-Object {
-            # ($_.StartsWith("card"))
             ($_.StartsWith("card `"/starwars") -or $_.StartsWith("card `"/TWO"))
         } |
         Sort-Object |
@@ -1110,7 +1004,11 @@ function SortAndSave () {
     }
 }
 
-function ConcatChunks {
+#endregion Export Functions
+
+#region Format Functions
+
+function Format-CdfTagGroup {
     [CmdletBinding()]
     param (
         [Parameter(ValueFromPipeline = $true)]
@@ -1133,3 +1031,27 @@ function ConcatChunks {
         Write-Output $output
     }
 }
+
+function Format-CdfTagPrefix {
+    param(
+        [Parameter(ValueFromPipeline = $true)]
+        [PSCustomObject]
+        $Context,
+
+        [string]
+        $TagName,
+
+        [string]
+        $TagValue
+    )
+
+    [string]$output = ""
+
+    if ($TagValue -ne "") { $output = "{0}: {1}" -f $TagName, $TagValue }
+
+    $output = $output.Trim()
+
+    Write-Output $output
+}
+
+#endregion Format Functions
