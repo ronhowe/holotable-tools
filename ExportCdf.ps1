@@ -16,7 +16,7 @@ $seconds = Measure-Command -Expression {
     # Export-Cdf -JsonPath "~/source/repos/swccg-card-json/Dark.json" -CdfPath "~/source/repos/holotable-tools/Dark.cdf" -SetFilter "*13*" -Debug -Verbose
     # Export-Cdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "~/source/repos/holotable-tools/Light.cdf" -SetFilter "*13*" -Debug -Verbose
 
-    # Export-Cdf -JsonPath "~/source/repos/swccg-card-json/Dark.json" -CdfPath "~/source/repos/holotable-tools/Dark.cdf" -TitleFilter "*A Useless Gesture*" -Debug -Verbose
+    # Export-Cdf -JsonPath "~/source/repos/swccg-card-json/Dark.json" -CdfPath "~/source/repos/holotable-tools/Dark.cdf" -TitleFilter "*Coruscant: Imperial City*" -Debug -Verbose
     # Export-Cdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "~/source/repos/holotable-tools/Light.cdf" -TitleFilter "*Rebel Leadership*" -Debug -Verbose
 
     # Export-Cdf -JsonPath "~/source/repos/swccg-card-json/Dark.json" -CdfPath "~/source/repos/holotable-tools/Dark.cdf" -TypeFilter "Admiral's*" -Debug -Verbose
