@@ -378,10 +378,10 @@ function ConvertTo-CdfLine {
                 }
                 $line2 = "{0}\n" -f $setTag
                 $line3 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
-                $line4 = "{0}\n" -f $loreTag
+                $line4 = if ($loreTag -ne "") { "{0}\n\n" -f $loreTag } else { "" }
                 $line5 = "{0}" -f $gametextTag
 
-                "card `"$image`" `"{0}{1}{2}{3}\n{4}\n{5}`"" -f $line0, $line1, $line2, $line3, $line4, $line5
+                "card `"$image`" `"{0}{1}{2}{3}\n{4}{5}`"" -f $line0, $line1, $line2, $line3, $line4, $line5
             }
             "Epic Event" {
                 $line0 = "{0} ({1})\n" -f $title, $destiny
@@ -406,10 +406,10 @@ function ConvertTo-CdfLine {
                 $line1 = "{0} {1} - {2} [{3}]\n" -f $side, $type, $subType, $rarity
                 $line2 = "{0}\n" -f $setTag
                 $line3 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
-                $line4 = "{0}\n" -f $loreTag
+                $line4 = if ($loreTag -ne "") { "{0}\n\n" -f $loreTag } else { "" }
                 $line5 = "{0}" -f $gametextTag
 
-                "card `"$image`" `"{0}{1}{2}{3}\n{4}\n{5}`"" -f $line0, $line1, $line2, $line3, $line4, $line5
+                "card `"$image`" `"{0}{1}{2}{3}\n{4}{5}`"" -f $line0, $line1, $line2, $line3, $line4, $line5
             }
             "Jedi Test #1" {
                 $line0 = "{0} ({1})\n" -f $title, $destiny
