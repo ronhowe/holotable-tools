@@ -608,6 +608,10 @@ function ConvertTo-CdfParsec {
 
     try {
         $output = $Context.front.parsec
+
+        if ((-not $output) -and ($Context.front.subType -eq "System")) {
+            $output = "X"
+        }
     }
     catch {
         Write-Debug "`tFailed to find or parse parsec."

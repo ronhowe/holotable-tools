@@ -21,7 +21,7 @@ Export-Cdf -JsonPath "~/source/repos/swccg-card-json/Dark.json" -CdfPath "~/sour
 # Export-Cdf -JsonPath "~/source/repos/swccg-card-json/Dark.json" -CdfPath "~/source/repos/holotable-tools/Dark.cdf" -TypeFilter "Location*"
 # Export-Cdf -JsonPath "~/source/repos/swccg-card-json/Light.json" -CdfPath "~/source/repos/holotable-tools/Light.cdf" -TypeFilter "Admiral*"
 
-Export-BasicCdf -CdfInputPath "~/source/repos/holotable/darkside.cdf" -CdfOutputPath "~/source/repos/holotable-tools/darkside.basic.cdf"
+# Export-BasicCdf -CdfInputPath "~/source/repos/holotable/darkside.cdf" -CdfOutputPath "~/source/repos/holotable-tools/darkside.basic.cdf"
 Export-BasicCdf -CdfInputPath "~/source/repos/holotable-tools/Dark.cdf" -CdfOutputPath "~/source/repos/holotable-tools/Dark.basic.cdf"
 
 # Export-BasicCdf -CdfInputPath "~/source/repos/holotable-tools/Light.cdf" -CdfOutputPath "~/source/repos/holotable-tools/Lightside.basic.cdf"
