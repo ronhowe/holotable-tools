@@ -552,7 +552,7 @@ function ConvertTo-CdfLine {
     }
 
     # Add various shims and hacks.
-    $output = $output.Replace('Text: \n', 'Text:\n').Replace('.)  \n', '.)\n\n').Replace('.  \n', '.\n\n').Replace('. \n', '.\n').Replace('! \n', '!\n').Replace('.) \n', '.)\n')
+    $output = $output.Replace('Text: \n', 'Text:\n').Replace('.)  \n', '.)\n\n').Replace('.  \n', '.\n\n').Replace('. \n', '.\n').Replace('! \n', '!\n').Replace('.) \n', '.)\n').Replace('•', '�')
 
     Write-Debug $output
     Write-Output $output
@@ -958,13 +958,13 @@ function Export-Cdf {
         Remove-Item -Path $CdfPath
     }
 
-    "version {0}" -f $(Get-Date -Format "yyyyMMdd") | Add-Content -Path $CdfPath
+    "version {0}" -f $(Get-Date -Format "yyyyMMdd") | Add-Content -Path $CdfPath -Encoding utf8
     
     if ($CdfPath.EndsWith("Dark.cdf")) {
-        "back imp.gif" | Add-Content -Path $CdfPath
+        "back imp.gif" | Add-Content -Path $CdfPath -Encoding utf8
     }
     elseif ($CdfPath.EndsWith("Light.cdf")) {
-        "back reb.gif" | Add-Content -Path $CdfPath
+        "back reb.gif" | Add-Content -Path $CdfPath -Encoding utf8
     }
 
     [string]$PreviousSection = ""
@@ -999,7 +999,7 @@ function Export-Cdf {
         $PreviousSection = $_.Section
         Write-Output $_.Line
     } |
-    Add-Content -Path $CdfPath
+    Add-Content -Path $CdfPath -Encoding utf8
 }
 
 function Export-BasicCdf () {
@@ -1030,7 +1030,7 @@ function Export-BasicCdf () {
             $($_.StartsWith("card `"/legacy") -and -not $ExcludeLegacy)
         } |
         Sort-Object |
-        Add-Content -Path $CdfOutputPath
+        Add-Content -Path $CdfOutputPath -Encoding utf8
     }
     else {
         Write-Host "Could not find $CdfInputPath"
