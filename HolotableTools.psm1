@@ -177,6 +177,16 @@ function ConvertTo-CdfGameText {
                 $output = $output.Replace($_, "\n$_") 
             }
         }
+
+        # Commence Primary Ignition
+        if ($Context.id -eq 508) {
+        @(" Name the System:", " You May Fire When Ready:", " Stand By:", " X =", " Y =", " Z =") |
+        ForEach-Object {
+            if ($output.Contains($_)) {
+                $output = $output.Replace($_, "\n$($_.Trim())") 
+            }
+        }
+    }
     }
     catch {
         Write-Debug "`tFailed to find or parse gametext."
