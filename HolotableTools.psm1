@@ -180,13 +180,13 @@ function ConvertTo-CdfGameText {
 
         # Commence Primary Ignition
         if ($Context.id -eq 508) {
-        @(" Name the System:", " You May Fire When Ready:", " Stand By:", " X =", " Y =", " Z =") |
-        ForEach-Object {
-            if ($output.Contains($_)) {
-                $output = $output.Replace($_, "\n$($_.Trim())") 
+            @(" Name the System:", " You May Fire When Ready:", " Stand By:", " X =", " Y =", " Z =") |
+            ForEach-Object {
+                if ($output.Contains($_)) {
+                    $output = $output.Replace($_, "\n$($_.Trim())") 
+                }
             }
         }
-    }
     }
     catch {
         Write-Debug "`tFailed to find or parse gametext."
@@ -545,10 +545,11 @@ function ConvertTo-CdfLine {
                 $line1 = "{0} {1} - {2} [{3}]\n" -f $side, $type, $subType, $rarity
                 $line2 = "{0}\n" -f $setTag
                 $line3 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
-                $line4 = "{0}\n" -f $loreTag
-                $line5 = "{0}" -f $gametextTag
+                $line4 = if ($deployTag -ne "" -and $forfeitTag -ne "") { "{0} {1}\n" -f $deployTag, $forfeitTag } else { "" }
+                $line5 = "{0}\n" -f $loreTag
+                $line6 = "{0}" -f $gametextTag
 
-                "card `"$image`" `"{0}{1}{2}{3}\n{4}\n{5}`"" -f $line0, $line1, $line2, $line3, $line4, $line5
+                "card `"$image`" `"{0}{1}{2}{3}{4}\n{5}\n{6}`"" -f $line0, $line1, $line2, $line3, $line4, $line5, $line6
             }
             default {
                 Write-Warning "Type = $type, Title = $title, Error = Card type not supported."
