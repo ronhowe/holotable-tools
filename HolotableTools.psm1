@@ -197,6 +197,16 @@ function ConvertTo-CdfGameText {
                 }
             }
         }
+
+        # Hyperoute Navigation Chart
+        if ($Context.id -eq 6365) {
+            @("[0]", " [1]", " [2]", " [3]", " [4]", " [5]", " [6]", " [7]", " [8]", " [9]", " * Known Rebel Base") |
+            ForEach-Object {
+                if ($output.Contains($_)) {
+                    $output = $output.Replace($_, "\n$($_.Trim())") 
+                }
+            }
+        }        
     }
     catch {
         Write-Debug "`tFailed to find or parse gametext."
@@ -416,10 +426,9 @@ function ConvertTo-CdfLine {
                 $line0 = "{0} ({1})\n" -f $title, $destiny
                 $line1 = "{0} {1} [{2}]\n" -f $side, $type, $rarity
                 $line2 = "{0}\n" -f $setTag
-                $line3 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
-                $line4 = "{0}" -f $gametextTag
+                $line3 = "{0}" -f $gametextTag
 
-                "card `"$image`" `"{0}{1}{2}\n{3}\n{4}`"" -f $line0, $line1, $line2, $line3, $line4
+                "card `"$image`" `"{0}{1}{2}{3}`"" -f $line0, $line1, $line2, $line3
             }
             "Interrupt" {
                 $line0 = "{0} ({1})\n" -f $title, $destiny
