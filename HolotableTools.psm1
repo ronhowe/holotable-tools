@@ -1019,6 +1019,8 @@ function Export-Cdf {
             $true
         }
     } |
+    # TODO - Remove after parity.
+    Where-Object { $_.set -ne "Virtual Set 13" } |
     Sort-Object -Property "id" |
     Select-Object -Property @{Name = "Image"; Expression = { ConvertTo-CdfImage -Context $_ } }, @{Name = "Section"; Expression = { ConvertTo-CdfSection -Context $_ } }, @{Name = "SortTitle"; Expression = { ConvertTo-CdfTitleSort -Context $_ } }, @{Name = "Line"; Expression = { ConvertTo-CdfLine -Context $_ } } |
     Sort-Object -Property "Section", "SortTitle", "Image", "Line" |
