@@ -2,6 +2,8 @@
 
 Clear-Host
 
+Write-Host "Exporting..."
+
 Push-Location -Path $(Split-Path -Path $MyInvocation.MyCommand.Path -Parent)
 
 Import-Module -Name "./HolotableTools.psm1" -Force
