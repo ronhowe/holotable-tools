@@ -171,7 +171,7 @@ function ConvertTo-CdfGameText {
             $output = "{0}\n\n{1}" -f $output, $Context.conceptBy
         }
 
-        @("LOST:", "USED:", "STARTING:", "Requirements:", "Wild cards (0-7):", "Wild cards (1-6):", "Wild cards (2-7):", "Clone cards:", "Stakes:") |
+        @("LOST:", "USED:", "STARTING:", "Requirements:", "Wild cards (0-7):", "Wild cards (1-6):", "Wild cards (2-7):", "Clone cards:", "Stakes:", "Mentor:") |
         ForEach-Object {
             if ($output.Contains($_)) {
                 $output = $output.Replace($_, "\n$_") 
