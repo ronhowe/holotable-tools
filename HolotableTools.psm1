@@ -457,7 +457,7 @@ function ConvertTo-CdfLine {
                 $line3 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
                 $line4 = "{0}" -f $gametextTag
 
-                "card `"$image`" `"{0}{1}{2}\n{3}\n{4}`"" -f $line0, $line1, $line2, $line3, $line4
+                "card `"$image`" `"{0}{1}{2}\n{3}{4}`"" -f $line0, $line1, $line2, $line3, $line4
             }
             "Jedi Test #2" {
                 $line0 = "{0} ({1})\n" -f $title, $destiny
@@ -466,7 +466,7 @@ function ConvertTo-CdfLine {
                 $line3 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
                 $line4 = "{0}" -f $gametextTag
 
-                "card `"$image`" `"{0}{1}{2}\n{3}\n{4}`"" -f $line0, $line1, $line2, $line3, $line4
+                "card `"$image`" `"{0}{1}{2}\n{3}{4}`"" -f $line0, $line1, $line2, $line3, $line4
             }
             "Jedi Test #3" {
                 $line0 = "{0} ({1})\n" -f $title, $destiny
@@ -475,7 +475,7 @@ function ConvertTo-CdfLine {
                 $line3 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
                 $line4 = "{0}" -f $gametextTag
 
-                "card `"$image`" `"{0}{1}{2}\n{3}\n{4}`"" -f $line0, $line1, $line2, $line3, $line4
+                "card `"$image`" `"{0}{1}{2}\n{3}{4}`"" -f $line0, $line1, $line2, $line3, $line4
             }
             "Jedi Test #4" {
                 $line0 = "{0} ({1})\n" -f $title, $destiny
@@ -484,7 +484,7 @@ function ConvertTo-CdfLine {
                 $line3 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
                 $line4 = "{0}" -f $gametextTag
 
-                "card `"$image`" `"{0}{1}{2}\n{3}\n{4}`"" -f $line0, $line1, $line2, $line3, $line4
+                "card `"$image`" `"{0}{1}{2}\n{3}{4}`"" -f $line0, $line1, $line2, $line3, $line4
             }
             "Jedi Test #5" {
                 $line0 = "{0} ({1})\n" -f $title, $destiny
@@ -493,7 +493,7 @@ function ConvertTo-CdfLine {
                 $line3 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
                 $line4 = "{0}" -f $gametextTag
 
-                "card `"$image`" `"{0}{1}{2}\n{3}\n{4}`"" -f $line0, $line1, $line2, $line3, $line4
+                "card `"$image`" `"{0}{1}{2}\n{3}{4}`"" -f $line0, $line1, $line2, $line3, $line4
             }
             "Jedi Test #6" {
                 $line0 = "{0} ({1})\n" -f $title, $destiny
@@ -502,7 +502,7 @@ function ConvertTo-CdfLine {
                 $line3 = if ($iconsTag -ne "") { "{0}\n" -f $iconsTag } else { "" }
                 $line4 = "{0}" -f $gametextTag
 
-                "card `"$image`" `"{0}{1}{2}\n{3}\n{4}`"" -f $line0, $line1, $line2, $line3, $line4
+                "card `"$image`" `"{0}{1}{2}\n{3}{4}`"" -f $line0, $line1, $line2, $line3, $line4
             }
             "Location" {
                 $line0 = "{0} ({1})\n" -f $title, $destiny
