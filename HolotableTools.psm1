@@ -1071,6 +1071,10 @@ function Export-BasicCdf () {
             ($_.StartsWith("card `"/TWOSIDED")) -or
             $($_.StartsWith("card `"/legacy") -and -not $ExcludeLegacy)
         } |
+        # TODO: Remove Legacy Filter
+        Where-Object {
+            -not $_.StartsWith("card `"/TWOSIDED/legacy")
+        } |
         Sort-Object |
         Add-Content -Path $CdfOutputPath -Encoding utf8
     }
