@@ -187,6 +187,16 @@ function ConvertTo-CdfGameText {
                 }
             }
         }
+
+        # Target The Main Generator
+        if ($Context.id -eq 2422) {
+            @(" Prepare To Target The Main Generator:", " Maximum Firepower!:", " X =", " Y =") |
+            ForEach-Object {
+                if ($output.Contains($_)) {
+                    $output = $output.Replace($_, "\n$($_.Trim())") 
+                }
+            }
+        }
     }
     catch {
         Write-Debug "`tFailed to find or parse gametext."

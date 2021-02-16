@@ -2,6 +2,9 @@
 
 Clear-Host
 
+# TODO : Remove when done iterating.
+Push-Location -Path "~/source/repos/ronhowe/holotable" ; git pull origin consistency ; Pop-Location
+
 Write-Host "Exporting..."
 
 Push-Location -Path $(Split-Path -Path $MyInvocation.MyCommand.Path -Parent)
