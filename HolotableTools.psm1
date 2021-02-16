@@ -96,7 +96,27 @@ function ConvertTo-CdfDestiny {
             $output = "{0}/{1}" -f $Context.front.destiny, $Context.back.destiny
         }
         else {
-            $output = $Context.front.destiny
+            switch ($Context.id) {
+                141 {
+                    # Artoo-Detoo In Red 5
+                    $output = "0 or 7"
+                }
+                319 {
+                    # Brainiac
+                    $output = "pi"
+                }
+                1992 {
+                    # R2-D2 (Artoo-Detoo)
+                    $output = "2 or 5"
+                }
+                136 {
+                    # Artoo
+                    $output = "1 or 6"
+                }
+                default {
+                    $output = $Context.front.destiny
+                }
+            }
         }
     }
     catch {
