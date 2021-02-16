@@ -188,6 +188,16 @@ function ConvertTo-CdfGameText {
             }
         }
 
+        # Commence Primary Ignition (V)
+        if ($Context.id -eq 6187) {
+            @(" Prepare Single Reactor Ignition:", " Fire!:", " It's Beautiful:", " X =") |
+            ForEach-Object {
+                if ($output.Contains($_)) {
+                    $output = $output.Replace($_, "\n$($_.Trim())") 
+                }
+            }
+        }
+
         # Target The Main Generator
         if ($Context.id -eq 2422) {
             @(" Prepare To Target The Main Generator:", " Maximum Firepower!:", " X =", " Y =") |
@@ -206,7 +216,7 @@ function ConvertTo-CdfGameText {
                     $output = $output.Replace($_, "\n$($_.Trim())") 
                 }
             }
-        }        
+        }
     }
     catch {
         Write-Debug "`tFailed to find or parse gametext."
