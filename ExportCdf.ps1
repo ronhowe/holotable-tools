@@ -2,24 +2,24 @@
 
 Clear-Host
 
-Write-Host "Exporting..."
+Write-Host "Export started.  Please wait." -ForegroundColor Green
 
 Push-Location -Path $(Split-Path -Path $MyInvocation.MyCommand.Path -Parent)
 
 Import-Module -Name "./HolotableTools.psm1" -Force
 
-Export-Cdf -JsonPath "~/source/repos/ronhowe/swccg-card-json/Dark.json" -CdfPath "~/source/repos/ronhowe/holotable-tools/Dark.cdf"
-Export-BasicCdf -CdfInputPath "~/source/repos/ronhowe/holotable/darkside.cdf" -CdfOutputPath "~/source/repos/ronhowe/holotable-tools/darkside.basic.cdf" -ExcludeLegacy
-Export-BasicCdf -CdfInputPath "~/source/repos/ronhowe/holotable-tools/Dark.cdf" -CdfOutputPath "~/source/repos/ronhowe/holotable-tools/Dark.basic.cdf" -ExcludeLegacy
+Export-Cdf -JsonPath "~/source/repos/ronhowe/swccg-card-json/Dark.json" -CdfPath "~/source/repos/ronhowe/holotable-tools/Dark.cdf" -ExcludeLegacy:$false
+Export-BasicCdf -CdfInputPath "~/source/repos/ronhowe/holotable/darkside.cdf" -CdfOutputPath "~/source/repos/ronhowe/holotable-tools/darkside.basic.cdf" -ExcludeLegacy:$false
+Export-BasicCdf -CdfInputPath "~/source/repos/ronhowe/holotable-tools/Dark.cdf" -CdfOutputPath "~/source/repos/ronhowe/holotable-tools/Dark.basic.cdf" -ExcludeLegacy:$false
 code --diff ./darkside.basic.cdf ./Dark.basic.cdf
 
-Export-Cdf -JsonPath "~/source/repos/ronhowe/swccg-card-json/Light.json" -CdfPath "~/source/repos/ronhowe/holotable-tools/Light.cdf"
-Export-BasicCdf -CdfInputPath "~/source/repos/ronhowe/holotable/lightside.cdf" -CdfOutputPath "~/source/repos/ronhowe/holotable-tools/lightside.basic.cdf" -ExcludeLegacy
-Export-BasicCdf -CdfInputPath "~/source/repos/ronhowe/holotable-tools/Light.cdf" -CdfOutputPath "~/source/repos/ronhowe/holotable-tools/Light.basic.cdf" -ExcludeLegacy
+Export-Cdf -JsonPath "~/source/repos/ronhowe/swccg-card-json/Light.json" -CdfPath "~/source/repos/ronhowe/holotable-tools/Light.cdf" -ExcludeLegacy:$false
+Export-BasicCdf -CdfInputPath "~/source/repos/ronhowe/holotable/lightside.cdf" -CdfOutputPath "~/source/repos/ronhowe/holotable-tools/lightside.basic.cdf" -ExcludeLegacy:$false
+Export-BasicCdf -CdfInputPath "~/source/repos/ronhowe/holotable-tools/Light.cdf" -CdfOutputPath "~/source/repos/ronhowe/holotable-tools/Light.basic.cdf" -ExcludeLegacy:$false
 code --diff ./lightside.basic.cdf ./Light.basic.cdf
 
 Pop-Location
 
-Write-Host "Done." -ForegroundColor Green
+Write-Host "Export completed." -ForegroundColor Green
 
 #endregion Hit F5
