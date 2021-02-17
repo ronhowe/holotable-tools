@@ -296,6 +296,7 @@ function ConvertTo-CdfHypderspeed {
 }
 
 function ConvertTo-CdfIcons {
+    [CmdletBinding()]
     param(
         [Parameter(ValueFromPipeline = $true)]
         [PSCustomObject]
@@ -314,6 +315,7 @@ function ConvertTo-CdfIcons {
 }
 
 function ConvertTo-CdfImage {
+    [CmdletBinding()]
     param(
         [Parameter(ValueFromPipeline = $true)]
         [PSCustomObject]
@@ -355,6 +357,7 @@ function ConvertTo-CdfLandspeed {
 }
 
 function ConvertTo-CdfLine {
+    [CmdletBinding()]
     param(
         [Parameter(ValueFromPipeline = $true)]
         [PSCustomObject]
@@ -794,6 +797,7 @@ function ConvertTo-CdfRarity {
 }
 
 function ConvertTo-CdfSection {
+    [CmdletBinding()]
     param(
         [Parameter(ValueFromPipeline = $true)]
         [PSCustomObject]
@@ -965,10 +969,10 @@ function ConvertTo-CdfUniqueness {
 function Export-Cdf {
     <#
     .SYNOPSIS
-    This script attempts to parse a JSON file in the swccg-card-json repo to the approximate format of a Holotable CDF file.
+    This cmdlet exports a Holotable CDF file from a swccg-card-json JSON file.
 
     .DESCRIPTION
-    This script attempts to parse a JSON file in the swccg-card-json repo to the approximate format of a Holotable CDF file.
+    This cmdlet attempts to parse a swccg-card-json JSON file and creates a Holotable compatible CDF file.
 
     .PARAMETER JsonPath
     The path to the input JSON file.
@@ -977,28 +981,34 @@ function Export-Cdf {
     The path to the output CDF file.
 
     .PARAMETER Id
-    The id to parse.  Valid values can be found in the input JSFON file "id" properties.
+    The id to parse.  Valid values can be found in the input JSON file "id" properties.
 
     .PARAMETER Set
-    The set to parse.  Valid values can be found in the input JSFON file "set" properties.
+    The set to parse.  Valid values can be found in the input JSON file "set" properties.  Supports * wildcards.
 
     .PARAMETER Title
-    The title to parse.  Valid values can be found in the input JSFON file "title" properties.
+    The title to parse.  Valid values can be found in the input JSON file "title" properties.  Supports * wildcards.
 
     .PARAMETER Type
-    The type to parse.  Valid values can be found in the input JSFON file "type" properties.
+    The type to parse.  Valid values can be found in the input JSON file "type" properties.  Supports * wildcards.
+
+    .PARAMETER ExcludeLegacy
+    Whether or not to exclude legacy cards.  Default = $false.
 
     .EXAMPLE
-    PS> ./Export-Cdf.ps1 -JsonPath "./Light.json" -CdfPath "./Light.cdf" -Id 5300
+    PS> ./Export-Cdf.ps1 -JsonPath ./Light.json -CdfPath ./Light.cdf -Id 5300
 
     .EXAMPLE
-    PS> ./Export-Cdf.ps1 -JsonPath "./Dark.json" -CdfPath "./Dark.cdf" -Set "Virtual Set 13"
+    PS> ./Export-Cdf.ps1 -JsonPath ./Dark.json -CdfPath ./Dark.cdf -Set "Virtual Set 13"
 
     .EXAMPLE
-    PS> ./Export-Cdf -JsonPath "./Light.json" -CdfPath "./Light.cdf" -TitleFilter "*Rebel Leadership*"
+    PS> ./Export-Cdf -JsonPath ./Light.json -CdfPath ./Light.cdf -TitleFilter "*Rebel Leadership*"
 
     .EXAMPLE
-    PS> ./Export-Cdf -JsonPath "./Light.json" -CdfPath "./Light.cdf" -TypeFilter "Admiral*"
+    PS> ./Export-Cdf -JsonPath ./Light.json -CdfPath ./Light.cdf -TypeFilter "Admiral*"
+
+    .EXAMPLE
+    PS> ./Export-Cdf -JsonPath ./Light.json -CdfPath ./Light.cdf -ExcludeLegacy
 #>
     [CmdletBinding(DefaultParameterSetName = "NoFilter")]
     param(
@@ -1068,21 +1078,22 @@ function Export-Cdf {
     ConvertFrom-Json |
     Select-Object -ExpandProperty "cards" |
     Where-Object {
-        if ($PSCmdlet.ParameterSetName -eq "IdFilter") {
-            $_.id -eq $IdFilter
-        }
-        elseif ($PSCmdlet.ParameterSetName -eq "SetFilter") {
-            $_.set -like $SetFilter
-        }
-        elseif ($PSCmdlet.ParameterSetName -eq "TitleFilter") {
-            $_.front.title -like $TitleFilter
-        }
-        elseif ($PSCmdlet.ParameterSetName -eq "TypeFilter") {
-            $_.front.type -like $TypeFilter
-        }
-        else {
-            $true
-        }
+        $(
+            if ($PSCmdlet.ParameterSetName -eq "IdFilter") {
+                $_.id -eq $IdFilter
+            }
+            elseif ($PSCmdlet.ParameterSetName -eq "SetFilter") {
+                $_.set -like $SetFilter
+            }
+            elseif ($PSCmdlet.ParameterSetName -eq "TitleFilter") {
+                $_.front.title -like $TitleFilter
+            }
+            elseif ($PSCmdlet.ParameterSetName -eq "TypeFilter") {
+                $_.front.type -like $TypeFilter
+            }
+            else {
+                $true -and -not ($_.legacy -and $ExcludeLegacy)
+            }) -and -not ($_.legacy -and $ExcludeLegacy)
     } |
     Sort-Object -Property "id" |
     Select-Object -Property @{Name = "Image"; Expression = { ConvertTo-CdfImage -Context $_ } }, @{Name = "Section"; Expression = { ConvertTo-CdfSection -Context $_ } }, @{Name = "SortTitle"; Expression = { ConvertTo-CdfTitleSort -Context $_ } }, @{Name = "Line"; Expression = { ConvertTo-CdfLine -Context $_ } } |
@@ -1120,13 +1131,17 @@ function Export-BasicCdf () {
     if (Test-Path -Path $CdfInputPath) {
         Get-Content -Path $CdfInputPath |
         Where-Object {
-            ($_.StartsWith("card `"/starwars")) -or
-            ($_.StartsWith("card `"/TWOSIDED")) -or
-            $($_.StartsWith("card `"/legacy") -and -not $ExcludeLegacy)
-        } |
-        # TODO: Remove Legacy Filter
-        Where-Object {
-            -not $_.StartsWith("card `"/TWOSIDED/legacy")
+            if ($_.StartsWith("card")) {
+                if ($_.Contains('/legacy') -and $ExcludeLegacy) {
+                    return $false
+                }
+                else {
+                    return $true
+                }
+            }
+            else {
+                return $false
+            }
         } |
         Sort-Object |
         Add-Content -Path $CdfOutputPath -Encoding utf8
@@ -1165,6 +1180,7 @@ function Format-CdfTagGroup {
 }
 
 function Format-CdfTagPrefix {
+    [CmdletBinding()]
     param(
         [Parameter(ValueFromPipeline = $true)]
         [PSCustomObject]
