@@ -17,6 +17,7 @@ function ConvertTo-CdfAbility {
         Write-Warning "Failed to parse ability."
     }
 
+    Write-ParseLog -Key "ability" -Value $output
     Write-Output $output
 }
 
@@ -37,6 +38,7 @@ function ConvertTo-CdfArmor {
         Write-Warning "Failed to parse armor."
     }
 
+    Write-ParseLog -Key "armor" -Value $output
     Write-Output $output
 }
 
@@ -57,6 +59,7 @@ function ConvertTo-CdfDarkSideIcons {
         Write-Warning "Failed to parse darkSideIcons."
     }
 
+    Write-ParseLog -Key "darkSideIcons" -Value $output
     Write-Output $output
 }
 
@@ -85,6 +88,7 @@ function ConvertTo-CdfDeploy {
         Write-Warning "Failed to parse deploy."
     }
 
+    Write-ParseLog -Key "deploy" -Value $output
     Write-Output $output
 }
 
@@ -105,9 +109,17 @@ function ConvertTo-CdfDestiny {
         }
         else {
             switch ($Context.id) {
+                136 {
+                    # Artoo
+                    $output = "1 or 6"
+                }
                 141 {
                     # Artoo-Detoo In Red 5
                     $output = "0 or 7"
+                }
+                5373 {
+                    # BB-8 In Black Squadron 1
+                    $output = "pi"
                 }
                 319 {
                     # Brainiac
@@ -121,14 +133,6 @@ function ConvertTo-CdfDestiny {
                     # R2-D2 (Artoo-Detoo) (V)
                     $output = "2 or 5"
                 }
-                5373 {
-                    # BB-8 In Black Squadron 1
-                    $output = "pi"
-                }
-                136 {
-                    # Artoo
-                    $output = "1 or 6"
-                }
                 default {
                     $output = $Context.front.destiny
                 }
@@ -139,6 +143,7 @@ function ConvertTo-CdfDestiny {
         Write-Warning "Failed to parse destiny."
     }
 
+    Write-ParseLog -Key "destiny" -Value $output
     Write-Output $output
 }
 
@@ -159,6 +164,7 @@ function ConvertTo-CdfExtraText {
         Write-Warning "Failed to parse extraText."
     }
 
+    Write-ParseLog -Key "extraText" -Value $output
     Write-Output $output
 }
 
@@ -174,13 +180,13 @@ function ConvertTo-CdfForfeit {
 
     try {
         switch ($Context.id) {
-            1073 {
-                # Greedo
-                $output = "1/2"
-            }
             319 {
                 # Brainiac
                 $output = "X"
+            }
+            1073 {
+                # Greedo
+                $output = "1/2"
             }
             default {
                 $output = $Context.front.forfeit
@@ -191,6 +197,7 @@ function ConvertTo-CdfForfeit {
         Write-Warning "Failed to parse forfeit."
     }
 
+    Write-ParseLog -Key "forfeit" -Value $output
     Write-Output $output
 }
 
@@ -218,6 +225,16 @@ function ConvertTo-CdfGameText {
             }
         }
 
+        # Attack Run
+        if ($Context.id -eq 169) {
+            @(" Enter Trench:", " Provide Cover:", " It's Away!:", " Pull Up!:", " X =", " Y =", " Z =", " *Your Proton") |
+            ForEach-Object {
+                if ($output.Contains($_)) {
+                    $output = $output.Replace($_, "\n$($_.Trim())") 
+                }
+            }
+        }
+
         # Commence Primary Ignition
         if ($Context.id -eq 508) {
             @(" Name the System:", " You May Fire When Ready:", " Stand By:", " X =", " Y =", " Z =") |
@@ -238,9 +255,9 @@ function ConvertTo-CdfGameText {
             }
         }
 
-        # Attack Run
-        if ($Context.id -eq 169) {
-            @(" Enter Trench:", " Provide Cover:", " It's Away!:", " Pull Up!:", " X =", " Y =", " Z =", " *Your Proton") |
+        # Hyperoute Navigation Chart
+        if ($Context.id -eq 6365) {
+            @("[0]", " [1]", " [2]", " [3]", " [4]", " [5]", " [6]", " [7]", " [8]", " [9]", " * Known Rebel Base") |
             ForEach-Object {
                 if ($output.Contains($_)) {
                     $output = $output.Replace($_, "\n$($_.Trim())") 
@@ -257,21 +274,12 @@ function ConvertTo-CdfGameText {
                 }
             }
         }
-
-        # Hyperoute Navigation Chart
-        if ($Context.id -eq 6365) {
-            @("[0]", " [1]", " [2]", " [3]", " [4]", " [5]", " [6]", " [7]", " [8]", " [9]", " * Known Rebel Base") |
-            ForEach-Object {
-                if ($output.Contains($_)) {
-                    $output = $output.Replace($_, "\n$($_.Trim())") 
-                }
-            }
-        }
     }
     catch {
         Write-Warning "Failed to parse gametext."
     }
 
+    Write-ParseLog -Key "gametext" -Value $output
     Write-Output $output
 }
 
@@ -292,6 +300,7 @@ function ConvertTo-CdfHypderspeed {
         Write-Warning "Failed to parse hyperspeed."
     }
 
+    Write-ParseLog -Key "hyperspeed" -Value $output
     Write-Output $output
 }
 
@@ -311,6 +320,7 @@ function ConvertTo-CdfIcons {
     
     $output = $output.Trim().Trim(",")
 
+    Write-ParseLog -Key "icons" -Value $output
     Write-Output $output
 }
 
@@ -333,6 +343,7 @@ function ConvertTo-CdfImage {
         $output = $Context.front.imageUrl.Replace("https://res.starwarsccg.org/cards/Images-HT", "").Replace("cards/", "").Replace("large/", "t_").Replace(".gif?raw=true", "")
     }
 
+    Write-ParseLog -Key "image" -Value $output
     Write-Output $output
 }
 
@@ -353,6 +364,7 @@ function ConvertTo-CdfLandspeed {
         Write-Warning "Failed to parse landspeed."
     }
 
+    Write-ParseLog -Key "landspeed" -Value $output
     Write-Output $output
 }
 
@@ -366,8 +378,7 @@ function ConvertTo-CdfLine {
 
     [string]$output = "";
 
-    $id = $Context.id
-    Write-Verbose "Parsing id = $id..."
+    Write-ParseLog -Key "id" -Value $Context.id
 
     try {
         $ability = ConvertTo-CdfAbility -Context $Context
@@ -408,7 +419,6 @@ function ConvertTo-CdfLine {
         $subType = ConvertTo-CdfSubType -Context $Context
         $title = ConvertTo-CdfTitle -Context $Context
         $type = ConvertTo-CdfType -Context $Context
-        # $uniqueness = ConvertTo-CdfUniqueness -Context $Context
 
         $output =
         switch ($type) {
@@ -649,6 +659,7 @@ function ConvertTo-CdfLine {
         Write-Warning "Failed to parse context."
     }
 
+    Write-ParseLog -Key "line" -Value $output
     Write-Output $output
 }
 
@@ -669,6 +680,7 @@ function ConvertTo-CdfLightSideIcons {
         Write-Warning "Failed to parse lightSideIcons."
     }
 
+    Write-ParseLog -Key "lightSideIcons" -Value $output
     Write-Output $output
 }
 
@@ -689,6 +701,7 @@ function ConvertTo-CdfLore {
         Write-Warning "Failed to parse lore."
     }
 
+    Write-ParseLog -Key "lore" -Value $output
     Write-Output $output
 }
 
@@ -709,6 +722,7 @@ function ConvertTo-CdfManeuver {
         Write-Warning "Failed to parse maneuver."
     }
 
+    Write-ParseLog -Key "maneuver" -Value $output
     Write-Output $output
 }
 
@@ -733,6 +747,7 @@ function ConvertTo-CdfParsec {
         Write-Warning "Failed to parse parsec."
     }
 
+    Write-ParseLog -Key "parsec" -Value $output
     Write-Output $output
 }
 
@@ -753,6 +768,7 @@ function ConvertTo-CdfPolitics {
         Write-Warning "Failed to parse politics."
     }
 
+    Write-ParseLog -Key "politics" -Value $output
     Write-Output $output
 }
 
@@ -773,6 +789,7 @@ function ConvertTo-CdfPower {
         Write-Warning "Failed to parse power."
     }
 
+    Write-ParseLog -Key "power" -Value $output
     Write-Output $output
 }
 
@@ -793,6 +810,7 @@ function ConvertTo-CdfRarity {
         Write-Warning "Failed to parse rarity."
     }
 
+    Write-ParseLog -Key "rarity" -Value $output
     Write-Output $output
 }
 
@@ -818,6 +836,7 @@ function ConvertTo-CdfSection {
         Write-Warning "Failed to parse section."
     }
 
+    Write-ParseLog -Key "section" -Value $output
     Write-Output $output
 }
 
@@ -838,6 +857,7 @@ function ConvertTo-CdfSet {
         Write-Warning "Failed to parse set."
     }
 
+    Write-ParseLog -Key "set" -Value $output
     Write-Output $output
 }
 
@@ -858,6 +878,7 @@ function ConvertTo-CdfSide {
         Write-Warning "Failed to parse side."
     }
 
+    Write-ParseLog -Key "side" -Value $output
     Write-Output $output
 }
 
@@ -878,6 +899,7 @@ function ConvertTo-CdfSubType {
         Write-Warning "Failed to parse subType."
     }
 
+    Write-ParseLog -Key "subType" -Value $output
     Write-Output $output
 }
 
@@ -898,9 +920,9 @@ function ConvertTo-CdfTitle {
         Write-Warning "Failed to parse title."
     }
 
+    Write-ParseLog -Key "title" -Value $output
     Write-Output $output
 }
-
 
 function ConvertTo-CdfTitleSort {
     [CmdletBinding()]
@@ -919,6 +941,7 @@ function ConvertTo-CdfTitleSort {
         Write-Warning "Failed to parse titleSort."
     }
 
+    Write-ParseLog -Key "titleSort" -Value $output
     Write-Output $output
 }
 
@@ -939,26 +962,7 @@ function ConvertTo-CdfType {
         Write-Warning "Failed to parse type."
     }
 
-    Write-Output $output
-}
-
-function ConvertTo-CdfUniqueness {
-    [CmdletBinding()]
-    param(
-        [Parameter(ValueFromPipeline = $true)]
-        [PSCustomObject]
-        $Context
-    )
-
-    [string]$output = "";
-
-    try {
-        $output = $Context.front.uniqueness
-    }
-    catch {
-        Write-Warning "Failed to parse uniqueness."
-    }
-
+    Write-ParseLog -Key "type" -Value $output
     Write-Output $output
 }
 
@@ -1095,8 +1099,7 @@ function Export-Cdf {
                 $true -and -not ($_.legacy -and $ExcludeLegacy)
             }) -and -not ($_.legacy -and $ExcludeLegacy)
     } |
-    Sort-Object -Property "id" |
-    Select-Object -Property @{Name = "Image"; Expression = { ConvertTo-CdfImage -Context $_ } }, @{Name = "Section"; Expression = { ConvertTo-CdfSection -Context $_ } }, @{Name = "SortTitle"; Expression = { ConvertTo-CdfTitleSort -Context $_ } }, @{Name = "Line"; Expression = { ConvertTo-CdfLine -Context $_ } } |
+    Select-Object -Property @{Name = "Line"; Expression = { ConvertTo-CdfLine -Context $_ } }, @{Name = "Image"; Expression = { ConvertTo-CdfImage -Context $_ -Debug:$false } }, @{Name = "Section"; Expression = { ConvertTo-CdfSection -Context $_  -Debug:$false } }, @{Name = "SortTitle"; Expression = { ConvertTo-CdfTitleSort -Context $_  -Debug:$false } }  |
     Sort-Object -Property "Section", "SortTitle", "Image", "Line" |
     ForEach-Object {
         if ($PreviousSection -ne $_.Section) {
@@ -1124,31 +1127,30 @@ function Export-BasicCdf () {
         $ExcludeLegacy = $false
     )
 
+    if (-not (Test-Path -Path $CdfInputPath)) {
+        Write-Error "Cannot find $CdfInputPath."
+    }
+
     if (Test-Path -Path $CdfOutputPath) {
         Remove-Item $CdfOutputPath -Force
     }
 
-    if (Test-Path -Path $CdfInputPath) {
-        Get-Content -Path $CdfInputPath |
-        Where-Object {
-            if ($_.StartsWith("card")) {
-                if ($_.Contains('/legacy') -and $ExcludeLegacy) {
-                    return $false
-                }
-                else {
-                    return $true
-                }
-            }
-            else {
+    Get-Content -Path $CdfInputPath |
+    Where-Object {
+        if ($_.StartsWith("card")) {
+            if ($_.Contains('/legacy') -and $ExcludeLegacy) {
                 return $false
             }
-        } |
-        Sort-Object |
-        Add-Content -Path $CdfOutputPath -Encoding utf8
-    }
-    else {
-        Write-Host "Could not find $CdfInputPath"
-    }
+            else {
+                return $true
+            }
+        }
+        else {
+            return $false
+        }
+    } |
+    Sort-Object |
+    Add-Content -Path $CdfOutputPath -Encoding utf8
 }
 
 #endregion Export Functions
@@ -1160,13 +1162,13 @@ function Format-CdfTagGroup {
     param (
         [Parameter(ValueFromPipeline = $true)]
         [string[]]
-        $chunks
+        $Tags
     )
     begin {
         $output = ""
     }
     process {
-        $chunks |
+        $Tags |
         ForEach-Object {
             if ($_ -ne "") {
                 $output = $output + $("{0} " -f $_)
@@ -1175,6 +1177,8 @@ function Format-CdfTagGroup {
     }
     end {
         $output = $output.Trim() + "\n"
+
+        Write-ParseLog -Key "tagGroup" -Value $output
         Write-Output $output
     }
 }
@@ -1195,11 +1199,30 @@ function Format-CdfTagPrefix {
 
     [string]$output = ""
 
-    if ($TagValue -ne "") { $output = "{0}: {1}" -f $TagName, $TagValue }
+    if ($TagValue -ne "") {
+        $output = "{0}: {1}" -f $TagName, $TagValue
+    }
 
     $output = $output.Trim()
 
+    Write-ParseLog -Key "tagPrefix" -Value $output
     Write-Output $output
 }
 
 #endregion Format Functions
+
+#region Log Functions
+
+function Write-ParseLog {
+    [CmdletBinding()]
+    param (
+        [string]$Key,
+        [string]$Value
+    )
+
+    $output = "{0} = {1}" -f $Key, $Value
+
+    Write-Debug $output
+}
+
+#endregion Log Functions
