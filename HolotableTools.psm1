@@ -109,6 +109,10 @@ function ConvertTo-CdfDestiny {
                     # R2-D2 (Artoo-Detoo)
                     $output = "2 or 5"
                 }
+                5373 {
+                    # BB-8 In Black Squadron 1
+                    $output = "pi"
+                }
                 136 {
                     # Artoo
                     $output = "1 or 6"
