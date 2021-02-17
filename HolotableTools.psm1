@@ -222,6 +222,16 @@ function ConvertTo-CdfGameText {
             }
         }
 
+        # Attack Run
+        if ($Context.id -eq 169) {
+            @(" Enter Trench:", " Provide Cover:", " It's Away!:", " Pull Up!:", " X =", " Y =", " Z =", " *Your Proton") |
+            ForEach-Object {
+                if ($output.Contains($_)) {
+                    $output = $output.Replace($_, "\n$($_.Trim())") 
+                }
+            }
+        }
+
         # Target The Main Generator
         if ($Context.id -eq 2422) {
             @(" Prepare To Target The Main Generator:", " Maximum Firepower!:", " X =", " Y =") |
