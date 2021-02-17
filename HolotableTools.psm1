@@ -14,7 +14,7 @@ function ConvertTo-CdfAbility {
         $output = $Context.front.ability
     }
     catch {
-        Write-Debug "`tFailed to find or parse ability."
+        Write-Warning "Failed to parse ability."
     }
 
     Write-Output $output
@@ -34,7 +34,7 @@ function ConvertTo-CdfArmor {
         $output = $Context.front.armor
     }
     catch {
-        Write-Debug "`tFailed to find or parse armor."
+        Write-Warning "Failed to parse armor."
     }
 
     Write-Output $output
@@ -54,7 +54,7 @@ function ConvertTo-CdfDarkSideIcons {
         $output = $Context.front.darkSideIcons
     }
     catch {
-        Write-Debug "`tFailed to find or parse darkSideIcons."
+        Write-Warning "Failed to parse darkSideIcons."
     }
 
     Write-Output $output
@@ -82,7 +82,7 @@ function ConvertTo-CdfDeploy {
         }
     }
     catch {
-        Write-Debug "`tFailed to find or parse deploy."
+        Write-Warning "Failed to parse deploy."
     }
 
     Write-Output $output
@@ -136,7 +136,7 @@ function ConvertTo-CdfDestiny {
         }
     }
     catch {
-        Write-Debug "`tFailed to find or parse destiny."
+        Write-Warning "Failed to parse destiny."
     }
 
     Write-Output $output
@@ -156,7 +156,7 @@ function ConvertTo-CdfExtraText {
         $output = $Context.front.extraText
     }
     catch {
-        Write-Debug "`tFailed to find or parse extraText."
+        Write-Warning "Failed to parse extraText."
     }
 
     Write-Output $output
@@ -188,7 +188,7 @@ function ConvertTo-CdfForfeit {
         }
     }
     catch {
-        Write-Debug "`tFailed to find or parse forfeit."
+        Write-Warning "Failed to parse forfeit."
     }
 
     Write-Output $output
@@ -269,7 +269,7 @@ function ConvertTo-CdfGameText {
         }
     }
     catch {
-        Write-Debug "`tFailed to find or parse gametext."
+        Write-Warning "Failed to parse gametext."
     }
 
     Write-Output $output
@@ -289,7 +289,7 @@ function ConvertTo-CdfHypderspeed {
         $output = $Context.front.hyperspeed
     }
     catch {
-        Write-Debug "`tFailed to find or parse hyperspeed."
+        Write-Warning "Failed to parse hyperspeed."
     }
 
     Write-Output $output
@@ -304,7 +304,11 @@ function ConvertTo-CdfIcons {
 
     [string]$output = "";
 
-    foreach ($icon in $Context.front.icons) { $output = $output + "$icon, " } ; $output = $output.Trim().Trim(",")
+    foreach ($icon in $Context.front.icons) {
+        $output = $output + "$icon, "
+    }
+    
+    $output = $output.Trim().Trim(",")
 
     Write-Output $output
 }
@@ -344,7 +348,7 @@ function ConvertTo-CdfLandspeed {
         $output = $Context.front.landspeed
     }
     catch {
-        Write-Debug "`tFailed to find or parse landspeed."
+        Write-Warning "Failed to parse landspeed."
     }
 
     Write-Output $output
@@ -634,17 +638,14 @@ function ConvertTo-CdfLine {
                 Write-Warning "Type = $type, Title = $title, Error = Card type not supported."
             }
         }
+
+        # Add various shims and hacks.
+        $output = $output.Replace('Text: \n', 'Text:\n').Replace('.)  \n', '.)\n\n').Replace('.  \n', '.\n\n').Replace('. \n', '.\n').Replace('! \n', '!\n').Replace('.) \n', '.)\n').Replace('•', '�')
     }
     catch {
-        Write-Warning "`tFailed to parse context."
-        Write-Debug $Context
-        Write-Debug $_
+        Write-Warning "Failed to parse context."
     }
 
-    # Add various shims and hacks.
-    $output = $output.Replace('Text: \n', 'Text:\n').Replace('.)  \n', '.)\n\n').Replace('.  \n', '.\n\n').Replace('. \n', '.\n').Replace('! \n', '!\n').Replace('.) \n', '.)\n').Replace('•', '�')
-
-    Write-Debug $output
     Write-Output $output
 }
 
@@ -662,7 +663,7 @@ function ConvertTo-CdfLightSideIcons {
         $output = $Context.front.lightSideIcons
     }
     catch {
-        Write-Debug "`tFailed to find or parse lightSideIcons."
+        Write-Warning "Failed to parse lightSideIcons."
     }
 
     Write-Output $output
@@ -682,7 +683,7 @@ function ConvertTo-CdfLore {
         $output = $Context.front.lore
     }
     catch {
-        Write-Debug "`tFailed to find or parse lore."
+        Write-Warning "Failed to parse lore."
     }
 
     Write-Output $output
@@ -702,7 +703,7 @@ function ConvertTo-CdfManeuver {
         $output = $Context.front.maneuver
     }
     catch {
-        Write-Debug "`tFailed to find or parse maneuver."
+        Write-Warning "Failed to parse maneuver."
     }
 
     Write-Output $output
@@ -726,7 +727,7 @@ function ConvertTo-CdfParsec {
         }
     }
     catch {
-        Write-Debug "`tFailed to find or parse parsec."
+        Write-Warning "Failed to parse parsec."
     }
 
     Write-Output $output
@@ -746,7 +747,7 @@ function ConvertTo-CdfPolitics {
         $output = $Context.front.politics
     }
     catch {
-        Write-Debug "`tFailed to find or parse politics."
+        Write-Warning "Failed to parse politics."
     }
 
     Write-Output $output
@@ -766,7 +767,7 @@ function ConvertTo-CdfPower {
         $output = $Context.front.power
     }
     catch {
-        Write-Debug "`tFailed to find or parse power."
+        Write-Warning "Failed to parse power."
     }
 
     Write-Output $output
@@ -786,7 +787,7 @@ function ConvertTo-CdfRarity {
         $output = $Context.rarity
     }
     catch {
-        Write-Debug "`tFailed to find or parse rarity."
+        Write-Warning "Failed to parse rarity."
     }
 
     Write-Output $output
@@ -810,7 +811,7 @@ function ConvertTo-CdfSection {
         }
     }
     catch {
-        Write-Debug "`tFailed to find or parse section."
+        Write-Warning "Failed to parse section."
     }
 
     Write-Output $output
@@ -830,7 +831,7 @@ function ConvertTo-CdfSet {
         $output = $Context.set.Replace("Virtual Set", "Set").Replace("Demo Deck", "Virtual Premium Set")
     }
     catch {
-        Write-Debug "`tFailed to find or parse set."
+        Write-Warning "Failed to parse set."
     }
 
     Write-Output $output
@@ -850,7 +851,7 @@ function ConvertTo-CdfSide {
         $output = $Context.side
     }
     catch {
-        Write-Debug "`tFailed to find or parse side."
+        Write-Warning "Failed to parse side."
     }
 
     Write-Output $output
@@ -870,7 +871,7 @@ function ConvertTo-CdfSubType {
         $output = $Context.front.subType
     }
     catch {
-        Write-Debug "`tFailed to find or parse subType."
+        Write-Warning "Failed to parse subType."
     }
 
     Write-Output $output
@@ -890,7 +891,7 @@ function ConvertTo-CdfTitle {
         $output = $Context.front.title
     }
     catch {
-        Write-Debug "`tFailed to find or parse title."
+        Write-Warning "Failed to parse title."
     }
 
     Write-Output $output
@@ -911,7 +912,7 @@ function ConvertTo-CdfTitleSort {
         $output = $Context.front.title.Replace("<>", "").Replace("•", "")
     }
     catch {
-        Write-Debug "`tFailed to find or parse titleSort."
+        Write-Warning "Failed to parse titleSort."
     }
 
     Write-Output $output
@@ -931,7 +932,7 @@ function ConvertTo-CdfType {
         $output = $Context.front.type
     }
     catch {
-        Write-Debug "`tFailed to find or parse type."
+        Write-Warning "Failed to parse type."
     }
 
     Write-Output $output
@@ -951,7 +952,7 @@ function ConvertTo-CdfUniqueness {
         $output = $Context.front.uniqueness
     }
     catch {
-        Write-Debug "`tFailed to find or parse uniqueness."
+        Write-Warning "Failed to parse uniqueness."
     }
 
     Write-Output $output
@@ -1037,11 +1038,15 @@ function Export-Cdf {
         [Parameter(Mandatory = $true, ParameterSetName = "TypeFilter")]
         [ValidateNotNullOrEmpty()]
         [string]
-        $TypeFilter
+        $TypeFilter,
+
+        [Parameter()]
+        [switch]
+        $ExcludeLegacy = $false
     )
 
     if (-not (Test-Path -Path $JsonPath)) {
-        Write-Error "Cannot find $JsonPath." -ErrorAction Stop
+        Write-Error "Cannot find $JsonPath."
     }
 
     if (Test-Path -Path $CdfPath) {
@@ -1079,8 +1084,6 @@ function Export-Cdf {
             $true
         }
     } |
-    # TODO - Remove after parity.
-    Where-Object { $_.set -ne "Virtual Set 13" } |
     Sort-Object -Property "id" |
     Select-Object -Property @{Name = "Image"; Expression = { ConvertTo-CdfImage -Context $_ } }, @{Name = "Section"; Expression = { ConvertTo-CdfSection -Context $_ } }, @{Name = "SortTitle"; Expression = { ConvertTo-CdfTitleSort -Context $_ } }, @{Name = "Line"; Expression = { ConvertTo-CdfLine -Context $_ } } |
     Sort-Object -Property "Section", "SortTitle", "Image", "Line" |
