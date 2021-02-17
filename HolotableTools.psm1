@@ -71,7 +71,15 @@ function ConvertTo-CdfDeploy {
     [string]$output = "";
 
     try {
-        $output = $Context.front.deploy
+        switch ($Context.id) {
+            319 {
+                # Brainiac
+                $output = "Y"
+            }
+            default {
+                $output = $Context.front.deploy
+            }
+        }
     }
     catch {
         Write-Debug "`tFailed to find or parse deploy."
@@ -165,6 +173,10 @@ function ConvertTo-CdfForfeit {
             1073 {
                 # Greedo
                 $output = "1/2"
+            }
+            319 {
+                # Brainiac
+                $output = "X"
             }
             default {
                 $output = $Context.front.forfeit
