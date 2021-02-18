@@ -658,6 +658,18 @@ function ConvertTo-CdfLine {
 
         # Add various shims and hacks.
         $output = $output.Replace('Text: \n', 'Text:\n').Replace('.)  \n', '.)\n\n').Replace('.  \n', '.\n\n').Replace('. \n', '.\n').Replace('! \n', '!\n').Replace('.) \n', '.)\n').Replace('•', '�')
+
+        # Luke Skywalker, The Emperor's Prize
+        if ($Context.id -eq 6501) {
+            Write-Warning "Game text of `"Luke Skywalker, The Emperor's Prize`" is hard-coded."
+            $output = "card `"/TWOSIDED/starwars/Virtual5-Dark/t_lukeskywalkertheemperorsprizefront/lukeskywalkertheemperorsprizeback`" `"�Luke Skywalker, The Emperor's Prize/Luke Skywalker, The Emperor's Prize (0/7)\nDark Character - Rebel [R]\nSet: Set 5\nPower: 0 Ability: 0 Carbon-Frozen\nDeploy: 0 Forfeit: 0\n\nLuke Skywalker, The Emperor's Prize:\n\nText: This is a Dark Side card and does not count toward your deck limit. Reveal to opponent when deploying your Starting Effect. Deploys to Death Star II: Throne Room only at start of game as a frozen captive if Bring Him Before Me on table and Your Destiny is suspended; otherwise place out of play. For remainder of game, may not be placed in Reserve Deck. This is a persona of Luke only while on table. While this side up, Bring Him Before Me may not flip. May not be escorted. Flip this card if Vader present and not escorting a captive. Place out of play if released or about to leave table.\n\nLuke Skywalker, The Emperor's Prize:\n\nPower: 6 Ability: 6 Jedi Knight\nImmediately 'thaw' Luke (Luke is a non-frozen captive escorted by Vader). While this side up, subtracts 3 from attempts to cross Luke over (even while a captive). Place out of play if released or about to leave table.`""
+        }
+        
+        # The Falcon, Junkyard Garbage
+        if ($Context.id -eq 5959) {
+            Write-Warning "Game text of `"The Falcon, Junkyard Garbage`" is hard-coded."
+            $output = "card `"/TWOSIDED/starwars/Virtual4-Light/t_thefalconjunkyardgarbagefront/thefalconjunkyardgarbageback`" `"�The Falcon, Junkyard Garbage/�The Falcon, Junkyard Garbage (0/7)\nLight Starship - Starfighter: Heavily-Modified Light Freighter [C]\nSet: Set 4\nPower: 3 Maneuver: 4 Hyperspeed: 6\nDeploy: 0 Forfeit: 7\nIcons: Nav Computer, Resistance, Scomp Link, Episode VII\n\n�The Falcon, Junkyard Garbage\n\nLore: The Millennium Falcon's well-known reputation is favorable not only for its captain and first mate, but for the Alliance as well.\n\nText: May not be placed in Reserve Deck. If Falcon about to leave table, place it out of play. May add 2 pilots and 2 passengers. Has ship-docking capability. While [Episode VII] Han or Rey piloting, maneuver +2 and immune to attrition < 4 (< 6 if both). Once during your move phase, if at a site, may flip this card (even if unpiloted).\n\n�The Falcon, Junkyard Garbage\nLight Combat Vehicle - Heavily-Modified Light Freighter\nPower: 3 Maneuver: 5 Landspeed: 2\nDeploy: 0 Forfeit: 7\nIcons: Resistance, Scomp Link, Episode VII\n\nLore: Han's 'special modifications' for Millennium Falcon included security mechanisms, deflector shields, hull plating, faster hyperdrive and enhanced weapons. Enclosed.\n\nText: May not be placed in Reserve Deck. If Falcon about to leave table, place it out of play. May add 2 pilots and 2 passengers. Immune to Trample and Unsalvageable, even if unpiloted. While Finn or Rey aboard, immune to attrition < 4 (< 6 if both). Once during your move phase, if piloted, may flip this card.`""
+        }
     }
     catch {
         Write-Warning "Failed to parse context."
