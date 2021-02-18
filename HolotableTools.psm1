@@ -125,6 +125,10 @@ function ConvertTo-CdfDestiny {
                     # Brainiac
                     $output = "pi"
                 }
+                6849 {
+                    # Puck
+                    $output = "7 or 1"
+                }
                 1992 {
                     # R2-D2 (Artoo-Detoo)
                     $output = "2 or 5"
