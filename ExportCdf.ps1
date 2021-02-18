@@ -38,6 +38,16 @@ code --diff ./lightside.basic.cdf ./Light.basic.cdf
 
 #endregion Light
 
+#region Statistics
+
+Write-Host "Getting card statistics..."
+
+Get-Content -Path "~/source/repos/ronhowe/swccg-card-json/Dark.json" | ConvertFrom-Json | Select-Object -ExpandProperty "cards" | Measure-Object -Property id -Minimum -Maximum | Select-Object -Property @{Name = "Side"; Expression = { "Dark" } }, @{Name = "Total Cards"; Expression = { $_.Count } }, @{Name = "Minimum Id"; Expression = { $_.Minimum } }, @{Name = "Maximum Id"; Expression = { $_.Maximum } }
+
+Get-Content -Path "~/source/repos/ronhowe/swccg-card-json/Light.json" | ConvertFrom-Json | Select-Object -ExpandProperty "cards" | Measure-Object -Property id -Minimum -Maximum | Select-Object -Property @{Name = "Side"; Expression = { "Light" } }, @{Name = "Total Cards"; Expression = { $_.Count } }, @{Name = "Minimum Id"; Expression = { $_.Minimum } }, @{Name = "Maximum Id"; Expression = { $_.Maximum } }
+
+#endregion Statistics
+
 Pop-Location
 
 Write-Host "Done." -ForegroundColor Green
