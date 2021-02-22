@@ -842,7 +842,7 @@ function ConvertTo-CdfSection {
     [string]$output = "";
 
     try {
-        if ($Context.front.subType) {
+        if (($Context.front.subType) -and ($Context.front.type -ne "Creature")) {
             $output = $("[{0} - {1}]" -f $Context.front.type, $Context.front.subType.Split(":")[0]).Replace(" - ]", "]")
         }
         else {
