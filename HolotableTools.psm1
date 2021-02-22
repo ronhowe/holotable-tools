@@ -224,7 +224,8 @@ function ConvertTo-CdfGameText {
 
         @("LOST:", "USED:", "STARTING:", "Requirements:", "Wild cards (0-7):", "Wild cards (1-6):", "Wild cards (2-7):", "Clone cards:", "Stakes:", "Mentor:") |
         ForEach-Object {
-            if ($output.Contains($_)) {
+            # Shim for Reveal Ourselves To The Jedi
+            if (($output.Contains($_)) -and ($Context.id -ne 2108)) {
                 $output = $output.Replace($_, "\n$_") 
             }
         }
