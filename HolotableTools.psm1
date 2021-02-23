@@ -42,27 +42,6 @@ function ConvertTo-CdfArmor {
     Write-Output $output
 }
 
-function ConvertTo-CdfDarkSideIcons {
-    [CmdletBinding()]
-    param(
-        [Parameter(ValueFromPipeline = $true)]
-        [PSCustomObject]
-        $Context
-    )
-
-    [string]$output = "";
-
-    try {
-        $output = $Context.front.darkSideIcons
-    }
-    catch {
-        Write-Warning "Failed to parse darkSideIcons."
-    }
-
-    Write-ParseLog -Key "darkSideIcons" -Value $output
-    Write-Output $output
-}
-
 function ConvertTo-CdfDeploy {
     [CmdletBinding()]
     param(
@@ -169,6 +148,48 @@ function ConvertTo-CdfExtraText {
     }
 
     Write-ParseLog -Key "extraText" -Value $output
+    Write-Output $output
+}
+
+function ConvertTo-CdfForceIconsDark {
+    [CmdletBinding()]
+    param(
+        [Parameter(ValueFromPipeline = $true)]
+        [PSCustomObject]
+        $Context
+    )
+
+    [string]$output = "";
+
+    try {
+        $output = $Context.front.darkSideIcons
+    }
+    catch {
+        Write-Warning "Failed to parse darkSideIcons."
+    }
+
+    Write-ParseLog -Key "darkSideIcons" -Value $output
+    Write-Output $output
+}
+
+function ConvertTo-CdfForceIconsLight {
+    [CmdletBinding()]
+    param(
+        [Parameter(ValueFromPipeline = $true)]
+        [PSCustomObject]
+        $Context
+    )
+
+    [string]$output = "";
+
+    try {
+        $output = $Context.front.lightSideIcons
+    }
+    catch {
+        Write-Warning "Failed to parse lightSideIcons."
+    }
+
+    Write-ParseLog -Key "lightSideIcons" -Value $output
     Write-Output $output
 }
 
@@ -390,7 +411,7 @@ function ConvertTo-CdfLine {
         $abilityTag = Format-CdfTagPrefix -Context $Context -TagName "Ability" -TagValue $ability
         $armor = ConvertTo-CdfArmor -Context $Context
         $armorTag = Format-CdfTagPrefix -Context $Context -TagName "Armor" -TagValue $armor
-        $darkSideIcons = ConvertTo-CdfDarkSideIcons -Context $Context
+        $darkSideIcons = ConvertTo-CdfForceIconsDark -Context $Context
         $deploy = ConvertTo-CdfDeploy -Context $Context
         $deployTag = Format-CdfTagPrefix -Context $Context -TagName "Deploy" -TagValue $deploy
         $destiny = ConvertTo-CdfDestiny -Context $Context
@@ -406,7 +427,7 @@ function ConvertTo-CdfLine {
         $image = ConvertTo-CdfImage -Context $Context
         $landspeed = ConvertTo-CdfLandspeed -Context $Context
         $landspeedTag = Format-CdfTagPrefix -Context $Context -TagName "Landspeed" -TagValue $landspeed
-        $lightSideIcons = ConvertTo-CdfLightSideIcons -Context $Context
+        $lightSideIcons = ConvertTo-CdfForceIconsLight -Context $Context
         $lore = ConvertTo-CdfLore -Context $Context
         $loreTag = Format-CdfTagPrefix -Context $Context -TagName "Lore" -TagValue $lore
         $maneuver = ConvertTo-CdfManeuver -Context $Context
@@ -677,27 +698,6 @@ function ConvertTo-CdfLine {
     }
 
     Write-ParseLog -Key "line" -Value $output
-    Write-Output $output
-}
-
-function ConvertTo-CdfLightSideIcons {
-    [CmdletBinding()]
-    param(
-        [Parameter(ValueFromPipeline = $true)]
-        [PSCustomObject]
-        $Context
-    )
-
-    [string]$output = "";
-
-    try {
-        $output = $Context.front.lightSideIcons
-    }
-    catch {
-        Write-Warning "Failed to parse lightSideIcons."
-    }
-
-    Write-ParseLog -Key "lightSideIcons" -Value $output
     Write-Output $output
 }
 
