@@ -15,7 +15,7 @@
 [CmdletBinding()]
 param(
     [string]
-    $RepoPath = "~/source/repos/holotable",
+    $RepoPath = "~/source/repos/ronhowe/holotable",
 
     [bool]
     $IncludeImages = $false
