@@ -341,7 +341,9 @@ function ConvertTo-CdfIcons {
     [string]$output = "";
 
     foreach ($icon in $Context.front.icons) {
-        $output = $output + "$icon, "
+        if ($icon -ne "Defensive Shield") {
+            $output = $output + "$icon, "
+        }
     }
     
     $output = $output.Trim().Trim(",")
