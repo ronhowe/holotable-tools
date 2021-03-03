@@ -371,12 +371,12 @@ function ConvertTo-CdfImage {
     [string]$output = "";
 
     if ($Context.back.imageUrl) {
-        $front = $Context.front.imageUrl.Replace("https://res.starwarsccg.org/cards/Images-HT", "").Replace("cards/", "").Replace("large/", "t_").Replace(".gif?raw=true", "")
-        $back = $(Split-Path -Path $Context.back.imageUrl -Leaf).Replace(".gif?raw=true", "")
+        $front = $Context.front.imageUrl.Replace("https://res.starwarsccg.org/cards/", "/starwars/").Replace("large/", "t_").Replace(".gif", "")
+        $back = $(Split-Path -Path $Context.back.imageUrl -Leaf).Replace(".gif", "")
         $output = "/TWOSIDED{0}/{1}" -f $front, $back
     }
     else {
-        $output = $Context.front.imageUrl.Replace("https://res.starwarsccg.org/cards/Images-HT", "").Replace("cards/", "").Replace("large/", "t_").Replace(".gif?raw=true", "")
+        $output = $Context.front.imageUrl.Replace("https://res.starwarsccg.org/cards/", "/starwars/").Replace("large/", "t_").Replace(".gif", "")
     }
 
     Write-ParseLog -Key "image" -Value $output
