@@ -9,7 +9,7 @@ Import-Module -Name "./HolotableTools.psm1" -Force
 #region Dark
 
 Write-Host "Exporting Dark.cdf..."
-Export-Cdf -JsonPath "~/source/repos/ronhowe/swccg-card-json/Dark.json" -CdfPath "~/source/repos/ronhowe/holotable-tools/Dark.cdf" -ExcludeLegacy
+Export-Cdf -CardJsonPath "~/source/repos/ronhowe/swccg-card-json/Dark.json" -SetJsonPath "~/source/repos/ronhowe/swccg-card-json/sets.json" -CdfPath "~/source/repos/ronhowe/holotable-tools/Dark.cdf" -ExcludeLegacy
 
 Write-Host "Exporting Dark.basic.cdf..."
 Export-BasicCdf -CdfInputPath "~/source/repos/ronhowe/holotable-tools/Dark.cdf" -CdfOutputPath "~/source/repos/ronhowe/holotable-tools/Dark.basic.cdf" -ExcludeLegacy
@@ -25,7 +25,7 @@ code --diff ./darkside.basic.cdf ./Dark.basic.cdf
 #region Light
 
 Write-Host "Exporting Light.cdf..."
-Export-Cdf -JsonPath "~/source/repos/ronhowe/swccg-card-json/Light.json" -CdfPath "~/source/repos/ronhowe/holotable-tools/Light.cdf" -ExcludeLegacy
+Export-Cdf -CardJsonPath "~/source/repos/ronhowe/swccg-card-json/Light.json" -SetJsonPath "~/source/repos/ronhowe/swccg-card-json/sets.json" -CdfPath "~/source/repos/ronhowe/holotable-tools/Light.cdf" -ExcludeLegacy
 
 Write-Host "Exporting Light.basic.cdf..."
 Export-BasicCdf -CdfInputPath "~/source/repos/ronhowe/holotable-tools/Light.cdf" -CdfOutputPath "~/source/repos/ronhowe/holotable-tools/Light.basic.cdf" -ExcludeLegacy

@@ -409,7 +409,10 @@ function ConvertTo-CdfLine {
     param(
         [Parameter(ValueFromPipeline = $true)]
         [PSCustomObject]
-        $Context
+        $Context,
+
+        [Parameter(Mandatory = $true)]
+        $SetJson
     )
 
     [string]$output = "";
@@ -449,7 +452,7 @@ function ConvertTo-CdfLine {
         $power = ConvertTo-CdfPower -Context $Context
         $powerTag = Format-CdfTagPrefix -Context $Context -TagName "Power" -TagValue $power
         $rarity = ConvertTo-CdfRarity -Context $Context
-        $set = ConvertTo-CdfSet -Context $Context
+        $set = ConvertTo-CdfSet -Context $Context -SetJson $SetJson
         $setTag = Format-CdfTagPrefix -Context $Context -TagName "Set" -TagValue $set
         $side = ConvertTo-CdfSide -Context $Context
         $subType = ConvertTo-CdfSubType -Context $Context
@@ -872,13 +875,16 @@ function ConvertTo-CdfSet {
     param(
         [Parameter(ValueFromPipeline = $true)]
         [PSCustomObject]
-        $Context
+        $Context,
+
+        [Parameter(Mandatory = $true)]
+        $SetJson
     )
 
     [string]$output = "";
 
     try {
-        $output = $Context.set.Replace("Virtual Set", "Set").Replace("Demo Deck", "Virtual Premium Set")
+        $output = $($SetJson.Where( { $_.id -eq $Context.set })).name.Replace("Virtual Set", "Set").Replace("Demo Deck", "Virtual Premium Set")
     }
     catch {
         Write-Warning "Failed to parse set."
@@ -1005,8 +1011,11 @@ function Export-Cdf {
     .DESCRIPTION
     This cmdlet attempts to parse a swccg-card-json JSON file and creates a Holotable compatible CDF file.
 
-    .PARAMETER JsonPath
-    The path to the input JSON file.
+    .PARAMETER CardJsonPath
+    The path to the input card JSON file.
+
+    .PARAMETER SetJsonPath
+    The path to the input set JSON file.
 
     .PARAMETER CdfPath
     The path to the output CDF file.
@@ -1027,19 +1036,19 @@ function Export-Cdf {
     Whether or not to exclude legacy cards.  Default = $false.
 
     .EXAMPLE
-    PS> ./Export-Cdf.ps1 -JsonPath ./Light.json -CdfPath ./Light.cdf -Id 5300
+    PS> ./Export-Cdf.ps1 -CardJsonPath ./Light.json -SetJsonPath ./sets.json -CdfPath ./Light.cdf -Id 5300
 
     .EXAMPLE
-    PS> ./Export-Cdf.ps1 -JsonPath ./Dark.json -CdfPath ./Dark.cdf -Set "Virtual Set 13"
+    PS> ./Export-Cdf.ps1 -CardJsonPath ./Dark.json -SetJsonPath ./sets.json -CdfPath ./Dark.cdf -Set "Virtual Set 13"
 
     .EXAMPLE
-    PS> ./Export-Cdf -JsonPath ./Light.json -CdfPath ./Light.cdf -TitleFilter "*Rebel Leadership*"
+    PS> ./Export-Cdf -CardJsonPath ./Light.json -SetJsonPath ./sets.json -CdfPath ./Light.cdf -TitleFilter "*Rebel Leadership*"
 
     .EXAMPLE
-    PS> ./Export-Cdf -JsonPath ./Light.json -CdfPath ./Light.cdf -TypeFilter "Admiral*"
+    PS> ./Export-Cdf -CardJsonPath ./Light.json -SetJsonPath ./sets.json -CdfPath ./Light.cdf -TypeFilter "Admiral*"
 
     .EXAMPLE
-    PS> ./Export-Cdf -JsonPath ./Light.json -CdfPath ./Light.cdf -ExcludeLegacy
+    PS> ./Export-Cdf -CardJsonPath ./Light.json -SetJsonPath ./sets.json -CdfPath ./Light.cdf -ExcludeLegacy
 #>
     [CmdletBinding(DefaultParameterSetName = "NoFilter")]
     param(
@@ -1050,7 +1059,16 @@ function Export-Cdf {
         [Parameter(Mandatory = $true, ParameterSetName = "TypeFilter")]
         [ValidateNotNullOrEmpty()]
         [string]
-        $JsonPath,
+        $CardJsonPath,
+
+        [Parameter(Mandatory = $true, ParameterSetName = "NoFilter")]
+        [Parameter(Mandatory = $true, ParameterSetName = "IdFilter")]
+        [Parameter(Mandatory = $true, ParameterSetName = "SetFilter")]
+        [Parameter(Mandatory = $true, ParameterSetName = "TitleFilter")]
+        [Parameter(Mandatory = $true, ParameterSetName = "TypeFilter")]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $SetJsonPath,
 
         [Parameter(Mandatory = $true, ParameterSetName = "NoFilter")]
         [Parameter(Mandatory = $true, ParameterSetName = "IdFilter")]
@@ -1086,8 +1104,12 @@ function Export-Cdf {
         $ExcludeLegacy = $false
     )
 
-    if (-not (Test-Path -Path $JsonPath)) {
-        Write-Error "Cannot find $JsonPath."
+    if (-not (Test-Path -Path $CardJsonPath)) {
+        Write-Error "Cannot find $CardJsonPath."
+    }
+
+    if (-not (Test-Path -Path $SetJsonPath)) {
+        Write-Error "Cannot find $SetJsonPath."
     }
 
     if (Test-Path -Path $CdfPath) {
@@ -1105,7 +1127,9 @@ function Export-Cdf {
 
     [string]$PreviousSection = ""
 
-    Get-Content -Path $JsonPath |
+    $SetJson = Get-Content -Path $SetJsonPath | ConvertFrom-Json
+
+    Get-Content -Path $CardJsonPath |
     ConvertFrom-Json |
     Select-Object -ExpandProperty "cards" |
     Where-Object {
@@ -1126,7 +1150,7 @@ function Export-Cdf {
                 $true -and -not ($_.legacy -and $ExcludeLegacy)
             }) -and -not ($_.legacy -and $ExcludeLegacy)
     } |
-    Select-Object -Property @{Name = "Line"; Expression = { ConvertTo-CdfLine -Context $_ } }, @{Name = "Image"; Expression = { ConvertTo-CdfImage -Context $_ -Debug:$false } }, @{Name = "Section"; Expression = { ConvertTo-CdfSection -Context $_  -Debug:$false } }, @{Name = "SortTitle"; Expression = { ConvertTo-CdfTitleSort -Context $_  -Debug:$false } }  |
+    Select-Object -Property @{Name = "Line"; Expression = { ConvertTo-CdfLine -Context $_ -SetJson $SetJson } }, @{Name = "Image"; Expression = { ConvertTo-CdfImage -Context $_ -Debug:$false } }, @{Name = "Section"; Expression = { ConvertTo-CdfSection -Context $_  -Debug:$false } }, @{Name = "SortTitle"; Expression = { ConvertTo-CdfTitleSort -Context $_  -Debug:$false } }  |
     Sort-Object -Property "Section", "SortTitle", "Image", "Line" |
     ForEach-Object {
         if ($PreviousSection -ne $_.Section) {
